@@ -17,6 +17,11 @@ export type Tour = {
   image: string;
   imageAlt: string;
   flagship?: boolean;
+  /**
+   * A 'past' tour must never present as bookable — no price CTA, no Enquire
+   * button, no WhatsApp link. See CLAUDE.md and docs/client-profile.md.
+   */
+  status: "upcoming" | "past";
 };
 
 export const tours: Tour[] = [
@@ -33,6 +38,7 @@ export const tours: Tour[] = [
     includes: ["Return transport", "Afriski entry", "Snow play", "Photo stops"],
     image: "/images/skii-3.jpg",
     imageAlt: "Visitors in the snow at Afriski, Lesotho",
+    status: "past",
   },
   {
     slug: "tsikoane-plateau-camping",
@@ -56,6 +62,7 @@ export const tours: Tour[] = [
     image: "/images/horse-riding.jpg",
     imageAlt: "Horse riding on the Tsikoane plateau",
     flagship: true,
+    status: "upcoming",
   },
   {
     slug: "ultimate-afriski-weekend",
@@ -79,6 +86,7 @@ export const tours: Tour[] = [
     minPax: 6,
     image: "/images/skii-5.jpg",
     imageAlt: "Skier descending a slope at Afriski, Lesotho",
+    status: "upcoming",
   },
 ];
 

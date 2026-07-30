@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { Station } from "@/components/ui/Station";
 import { Contours } from "@/components/ui/Contours";
 import { Button } from "@/components/ui/Button";
+import { TourBadge } from "@/components/ui/TourBadge";
 import { tours, formatPrice } from "@/data/tours";
 import { tourEnquiryLink } from "@/lib/whatsapp";
 
@@ -61,16 +62,12 @@ export default async function TourDetailPage({ params }: Props) {
             ← All tours
           </Link>
 
-          {tour.flagship && (
-            <span className="mt-5 inline-block bg-minowane-deep px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-white">
-              Flagship
-            </span>
-          )}
+          <TourBadge tour={tour} className="mt-5 inline-block" />
 
           <Station
             elevation={tour.elevation}
             place={tour.place}
-            className={tour.flagship ? "mt-4" : "mt-6"}
+            className={tour.flagship || tour.status === "past" ? "mt-4" : "mt-6"}
           />
           <h1 className="type-display mt-4 text-[clamp(34px,6vw,64px)]">{tour.name}</h1>
           <p className="mt-5 max-w-[52ch] text-[16.5px] text-[#dce9f6]">{tour.blurb}</p>
@@ -95,37 +92,63 @@ export default async function TourDetailPage({ params }: Props) {
               </ul>
             </div>
 
-            <div className="h-fit border border-contour/20 bg-white p-8">
-              <div className="type-data text-[clamp(34px,4vw,48px)] leading-none tracking-tight text-minowane-deep">
-                {formatPrice(tour.priceFrom)}
-              </div>
-              <div className="mt-2.5 font-mono text-[11.5px] uppercase tracking-[0.16em] text-[#5B6C90]">
-                per person · {tour.duration}
-              </div>
-              {tour.priceNote && (
-                <p className="mt-2 font-mono text-[11.5px] tracking-[0.03em] text-[#5B6C90]">
-                  {tour.priceNote}
+            {tour.status === "past" ? (
+              <div className="h-fit border border-contour/20 bg-white p-8">
+                <div className="type-data text-[clamp(28px,3.4vw,36px)] leading-none tracking-tight text-[#5B6C90]">
+                  Ran for {formatPrice(tour.priceFrom)}
+                </div>
+                <div className="mt-2.5 font-mono text-[11.5px] uppercase tracking-[0.16em] text-[#5B6C90]">
+                  per person · {tour.duration}
+                </div>
+                {tour.priceNote && (
+                  <p className="mt-2 font-mono text-[11.5px] tracking-[0.03em] text-[#5B6C90]">
+                    {tour.priceNote}
+                  </p>
+                )}
+                <p className="mt-5 text-[14px] leading-relaxed text-[#33456B]">
+                  This trip has already run.
                 </p>
-              )}
-              {tour.minPax && (
-                <p className="mt-2 font-mono text-[11.5px] tracking-[0.03em] text-[#5B6C90]">
-                  Minimum {tour.minPax} people
-                </p>
-              )}
-
-              <div className="mt-6 flex flex-col gap-3">
-                <Button href={tourEnquiryLink(tour)} external className="justify-center">
-                  Enquire on WhatsApp
-                </Button>
                 <Button
                   href={`/contact?tour=${tour.slug}`}
                   variant="dark"
-                  className="justify-center"
+                  className="mt-4 w-full justify-center"
                 >
-                  Use the enquiry form
+                  Ask when it&rsquo;s back
                 </Button>
               </div>
-            </div>
+            ) : (
+              <div className="h-fit border border-contour/20 bg-white p-8">
+                <div className="type-data text-[clamp(34px,4vw,48px)] leading-none tracking-tight text-minowane-deep">
+                  {formatPrice(tour.priceFrom)}
+                </div>
+                <div className="mt-2.5 font-mono text-[11.5px] uppercase tracking-[0.16em] text-[#5B6C90]">
+                  per person · {tour.duration}
+                </div>
+                {tour.priceNote && (
+                  <p className="mt-2 font-mono text-[11.5px] tracking-[0.03em] text-[#5B6C90]">
+                    {tour.priceNote}
+                  </p>
+                )}
+                {tour.minPax && (
+                  <p className="mt-2 font-mono text-[11.5px] tracking-[0.03em] text-[#5B6C90]">
+                    Minimum {tour.minPax} people
+                  </p>
+                )}
+
+                <div className="mt-6 flex flex-col gap-3">
+                  <Button href={tourEnquiryLink(tour)} external className="justify-center">
+                    Enquire on WhatsApp
+                  </Button>
+                  <Button
+                    href={`/contact?tour=${tour.slug}`}
+                    variant="dark"
+                    className="justify-center"
+                  >
+                    Use the enquiry form
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </section>

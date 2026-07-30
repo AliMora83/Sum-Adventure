@@ -91,6 +91,20 @@ Pass is confirmed. Leave the others as `name tbc`.
 `.env.local` only, never committed. `.env.example` documents required keys with
 empty values. Do not print key values in terminal output or commit messages.
 
+### 8. Past tours are never bookable
+
+`data/tours.ts` tours carry `status: "upcoming" | "past"`. A past tour must
+never render a price as a call-to-action, an Enquire button, or a WhatsApp
+booking link — see `afriski-winter-day-trip`, and `components/ui/TourBadge.tsx`
+for the badge logic. The homepage featured grid excludes past tours entirely;
+`/tours` lists them in a separate section below the live tours. The
+`/tours/[slug]` route still generates for past slugs so a link shared from the
+original flyer resolves instead of 404ing.
+
+There is currently no JSON-LD or other structured data on the site. If any is
+added later, filter past tours out of it — a `Product`/`Event` schema listing
+a dead departure as bookable is worse than shipping no schema at all.
+
 ---
 
 ## Design direction: "Altitude"

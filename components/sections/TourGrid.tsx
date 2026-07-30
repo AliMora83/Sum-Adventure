@@ -1,11 +1,15 @@
 import Image from "next/image";
 import { Station } from "@/components/ui/Station";
+import { TourBadge } from "@/components/ui/TourBadge";
 import { tours, formatPrice } from "@/data/tours";
 import { tourEnquiryLink } from "@/lib/whatsapp";
 import { stations, formatElevation } from "@/data/stations";
 
 export function TourGrid() {
   const s = stations[3];
+  // Past tours never appear in the featured homepage grid — see /tours
+  // for the separate "past trips" section.
+  const liveTours = tours.filter((t) => t.status !== "past");
   return (
     <section id="tours" className="relative bg-snowline py-26">
       <div className="mx-auto max-w-[1180px] px-7 lg:pl-[152px]">
@@ -17,7 +21,7 @@ export function TourGrid() {
         </div>
 
         <div className="mt-11 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {tours.map((tour) => (
+          {liveTours.map((tour) => (
             <article
               key={tour.slug}
               className="reveal group flex flex-col border border-contour/20 bg-white transition-transform duration-200 ease-alt hover:-translate-y-1"
@@ -30,11 +34,7 @@ export function TourGrid() {
                   sizes="(min-width:1024px) 360px, (min-width:640px) 50vw, 100vw"
                   className="object-cover"
                 />
-                {tour.flagship && (
-                  <span className="absolute left-3.5 top-3.5 bg-minowane-deep px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-white">
-                    Flagship
-                  </span>
-                )}
+                <TourBadge tour={tour} className="absolute left-3.5 top-3.5" />
               </div>
 
               <div className="flex flex-1 flex-col p-6">
