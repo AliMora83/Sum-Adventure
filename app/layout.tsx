@@ -3,7 +3,7 @@ import { archivo, plexMono } from "@/lib/fonts";
 import { Masthead } from "@/components/site/Masthead";
 import { Footer } from "@/components/site/Footer";
 import { MobileBar } from "@/components/site/MobileBar";
-import { AltitudeRail, ScrollProgress } from "@/components/site/AltitudeRail";
+import { ScrollProgress } from "@/components/site/AltitudeRail";
 import { siteUrl, defaultOgImage } from "@/lib/site";
 import "./globals.css";
 
@@ -30,7 +30,6 @@ export default function RootLayout({
       <body>
         <Masthead />
         <ScrollProgress />
-        <AltitudeRail />
         <main>{children}</main>
         <Footer />
         <MobileBar />
