@@ -134,6 +134,9 @@ deliberately cut — handwriting fights the cartographic register.
 - Copy is sentence case in body, uppercase only via the `.type-display` and
   station-chip classes.
 - British/South African English: "kilometre", "colour", "organised".
+- `docs/client-profile.md` is the single sanctioned source for company copy
+  (mission, values, founder bio, service lines, etc). If it's not in that
+  file, it hasn't been supplied — don't invent it.
 
 ## Verification before any commit
 
