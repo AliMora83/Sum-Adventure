@@ -113,13 +113,17 @@ export function AltitudeRail() {
         {stations.map((s) => (
           <g key={s.id}>
             <circle cx={s.railX} cy={s.railY} r="2" className="fill-contour opacity-50" />
-            <text
+            {/* Quiet state: always visible, low-emphasis pill so the digits
+                hold their own contrast ratio regardless of what section
+                background is behind the rail at this point. */}
+            <ElevationPill
               x={s.railX + 14}
-              y={s.railY + 4}
-              className="fill-contour font-mono text-[11px] font-medium opacity-75 [font-variant-numeric:tabular-nums]"
-            >
-              {s.elevation === null ? "tbc" : formatElevation(s.elevation)}
-            </text>
+              y={s.railY}
+              elevation={s.elevation}
+              provisional={s.provisional}
+            />
+            {/* Emphasised state: the current station only, overlaid on
+                top of the quiet pill at the identical position/size. */}
             <ElevationPill
               x={s.railX + 14}
               y={s.railY}
