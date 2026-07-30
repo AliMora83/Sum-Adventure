@@ -20,6 +20,21 @@ const passes = [
   { n: "06", name: "Pass six", note: "name tbc", confirmed: false },
 ];
 
+/**
+ * Condensed from the full inclusions list in docs/client-profile.md — the
+ * five that sell the trip (dinosaur footprints, San rock art, horse riding,
+ * traditional Basotho meals, the bonfire), not the full eleven. Yoga, sound
+ * therapy and team building are real inclusions too but don't belong in a
+ * space this tight.
+ */
+const priceHighlights = [
+  "Dinosaur footprints",
+  "San rock art",
+  "Horse riding",
+  "Traditional Basotho meals",
+  "Bonfire",
+];
+
 /** Tridactyl print — three toes and a pad. Vector, not photographic. */
 function MinowanePrint() {
   return (
@@ -132,6 +147,14 @@ export function Tsikoane() {
               <div className="mt-2.5 font-mono text-[11.5px] uppercase tracking-[0.16em] text-mahlasela">
                 per person · {tour.duration}
               </div>
+              <ul className="mt-5 flex flex-wrap gap-x-4 gap-y-2 border-t border-dashed border-mahlasela/25 pt-5">
+                {priceHighlights.map((item) => (
+                  <li key={item} className="flex items-center gap-2 text-[12.5px] text-mahlasela">
+                    <span className="h-1 w-1 shrink-0 rounded-full bg-minowane" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
               <Button
                 href={tourEnquiryLink(tour)}
                 external
