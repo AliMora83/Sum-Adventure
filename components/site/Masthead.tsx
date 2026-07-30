@@ -3,9 +3,9 @@ import Image from "next/image";
 import { Button } from "@/components/ui/Button";
 
 const nav = [
-  { href: "#hlotse", label: "About" },
-  { href: "#tsikoane", label: "Tsikoane" },
-  { href: "#tours", label: "Tours" },
+  { href: "/about", label: "About" },
+  { href: "/#tsikoane", label: "Tsikoane" },
+  { href: "/tours", label: "Tours" },
 ];
 
 export function Masthead() {
@@ -43,7 +43,7 @@ export function Masthead() {
           ))}
         </nav>
 
-        <Button href="#tours" className="px-5 py-3 text-[11.5px]">
+        <Button href="/contact" className="px-5 py-3 text-[11.5px]">
           Enquire
         </Button>
       </div>

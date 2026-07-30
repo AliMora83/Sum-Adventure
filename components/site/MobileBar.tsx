@@ -13,7 +13,7 @@ export function MobileBar() {
       >
         WhatsApp
       </a>
-      <Button href="#tours" className="flex-1 justify-center py-3.5">
+      <Button href="/tours" className="flex-1 justify-center py-3.5">
         Tours
       </Button>
     </div>

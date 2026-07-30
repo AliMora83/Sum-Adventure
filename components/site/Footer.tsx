@@ -21,9 +21,10 @@ export function Footer() {
               Explore
             </h2>
             <ul className="space-y-2 text-sm">
-              <li><Link href="#tours" className="hover:text-minowane">Tours &amp; packages</Link></li>
-              <li><Link href="#tsikoane" className="hover:text-minowane">Tsikoane experience</Link></li>
-              <li><Link href="#hlotse" className="hover:text-minowane">About</Link></li>
+              <li><Link href="/tours" className="hover:text-minowane">Tours &amp; packages</Link></li>
+              <li><Link href="/#tsikoane" className="hover:text-minowane">Tsikoane experience</Link></li>
+              <li><Link href="/about" className="hover:text-minowane">About</Link></li>
+              <li><Link href="/contact" className="hover:text-minowane">Enquire</Link></li>
             </ul>
           </div>
           <div>
