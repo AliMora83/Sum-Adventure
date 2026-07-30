@@ -6,12 +6,17 @@ import { TourBadge } from "@/components/ui/TourBadge";
 import { stations, formatElevation } from "@/data/stations";
 import { tours, formatPrice } from "@/data/tours";
 import { tourEnquiryLink } from "@/lib/whatsapp";
+import { buildMetadata } from "@/lib/site";
 
-export const metadata: Metadata = {
+const flagshipTour = tours.find((t) => t.flagship);
+
+export const metadata: Metadata = buildMetadata({
   title: "Tours & Packages — Sum Adventures",
   description:
     "Guided adventure tours across Lesotho: Afriski winter trips, Tsikoane plateau camping and multi-day packages, run out of Hlotse, Leribe.",
-};
+  image: flagshipTour?.image,
+  imageAlt: flagshipTour?.imageAlt,
+});
 
 export default function ToursIndexPage() {
   const s = stations[3];

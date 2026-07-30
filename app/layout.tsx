@@ -4,9 +4,11 @@ import { Masthead } from "@/components/site/Masthead";
 import { Footer } from "@/components/site/Footer";
 import { MobileBar } from "@/components/site/MobileBar";
 import { AltitudeRail, ScrollProgress } from "@/components/site/AltitudeRail";
+import { siteUrl, defaultOgImage } from "@/lib/site";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: siteUrl,
   title: "Sum Adventures — More Than Just A Trip",
   description:
     "Adventure tours, photography and events across Lesotho and Southern Africa. Tsikoane plateau camping, Afriski winter trips and educational tours, run out of Hlotse, Leribe.",
@@ -16,6 +18,7 @@ export const metadata: Metadata = {
       "Adventure tours, photography and events across Lesotho and Southern Africa.",
     locale: "en_ZA",
     type: "website",
+    images: [defaultOgImage],
   },
 };
 

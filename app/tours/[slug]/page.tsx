@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { TourBadge } from "@/components/ui/TourBadge";
 import { tours, formatPrice } from "@/data/tours";
 import { tourEnquiryLink } from "@/lib/whatsapp";
+import { buildMetadata } from "@/lib/site";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -22,15 +23,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const tour = tours.find((t) => t.slug === slug);
   if (!tour) return {};
 
-  return {
+  return buildMetadata({
     title: `${tour.name} — Sum Adventures`,
     description: tour.blurb,
-    openGraph: {
-      title: `${tour.name} — Sum Adventures`,
-      description: tour.blurb,
-      images: [{ url: tour.image }],
-    },
-  };
+    image: tour.image,
+    imageAlt: tour.imageAlt,
+  });
 }
 
 export default async function TourDetailPage({ params }: Props) {

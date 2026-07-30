@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import { Station } from "@/components/ui/Station";
 import { stations } from "@/data/stations";
 import { EnquiryForm } from "@/components/forms/EnquiryForm";
+import { buildMetadata } from "@/lib/site";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMetadata({
   title: "Enquire — Sum Adventures",
   description:
     "Send Sum Adventures an enquiry for a tour, event or photography booking in Lesotho.",
-};
+});
 
 type Props = {
   searchParams: Promise<{ tour?: string }>;
