@@ -116,11 +116,19 @@ empty values. Do not print key values in terminal output or commit messages.
 
 `data/tours.ts` tours carry `status: "upcoming" | "past"`. A past tour must
 never render a price as a call-to-action, an Enquire button, or a WhatsApp
-booking link — see `afriski-winter-day-trip`, and `components/ui/TourBadge.tsx`
-for the badge logic. The homepage featured grid excludes past tours entirely;
-`/tours` lists them in a separate section below the live tours. The
-`/tours/[slug]` route still generates for past slugs so a link shared from the
-original flyer resolves instead of 404ing.
+booking link — see `components/ui/TourBadge.tsx` for the badge logic. The
+homepage featured grid excludes past tours entirely; `/tours` lists them in a
+separate section below the live tours (that section simply doesn't render
+when no tour is past). The `/tours/[slug]` route still generates for past
+slugs so a link shared from the original flyer resolves instead of 404ing.
+
+Afriski Winter Day Trip was marked `past` in Sprint 4.5 (its flyer date had
+lapsed) and restored to `upcoming` in Sprint 5.5 — the client wants it
+presented as a standing, always-available activity with dates agreed per
+enquiry, not tied to the one flyer date. There is no date field on `Tour` and
+none should be added back for this reason: nothing about a tour's
+bookability should be inferred from a date. `status` is set explicitly per
+tour and only flips to `past` on the client's actual instruction.
 
 There is currently no JSON-LD or other structured data on the site. If any is
 added later, filter past tours out of it — a `Product`/`Event` schema listing

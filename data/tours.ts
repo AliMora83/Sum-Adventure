@@ -38,7 +38,7 @@ export const tours: Tour[] = [
     includes: ["Return transport", "Afriski entry", "Snow play", "Photo stops"],
     image: "/images/skii-3.jpg",
     imageAlt: "Visitors in the snow at Afriski, Lesotho",
-    status: "past",
+    status: "upcoming",
   },
   {
     slug: "tsikoane-plateau-camping",
