@@ -73,6 +73,18 @@
     opacity: 1;
     transform: none;
   }
+
+  /* Rail elevation pills (marker + ticks). Hidden by default — Firefox
+     stable, with no scroll-timeline support, keeps a correct static page:
+     the plain tick labels alone already carry the elevation spine without
+     this enhancement. animate-station-* below turns them on. */
+  .anim-station-hero,
+  .anim-station-hlotse,
+  .anim-station-tsikoane,
+  .anim-station-tours,
+  .anim-station-enquire {
+    opacity: 0;
+  }
 }
 
 /* ============================================================
@@ -84,6 +96,28 @@
    ============================================================ */
 @supports (animation-timeline: scroll()) {
   @media (prefers-reduced-motion: no-preference) {
+    /* Named view-timelines, one per station section. The rail's elevation
+       pills (fixed, elsewhere in the DOM) subscribe to these by name — see
+       .anim-station-* below. This is how the marker's displayed elevation
+       is tied to which section is actually on screen, rather than to the
+       marker's position along the SVG path: the two are independent, and
+       only the section-visibility one is trustworthy as "current station".
+
+       timeline-scope is required: view-timeline-name is only visible to
+       descendants of the element that declares it by default, but the rail
+       lives in a sibling subtree of <main> (both children of <body>), not
+       inside the sections it's reading. Scoping to body makes the names
+       referenceable across that boundary. */
+    body {
+      timeline-scope: --station-hero, --station-hlotse, --station-tsikoane,
+        --station-tours, --station-enquire;
+    }
+    #hero     { view-timeline-name: --station-hero; }
+    #hlotse   { view-timeline-name: --station-hlotse; }
+    #tsikoane { view-timeline-name: --station-tsikoane; }
+    #tours    { view-timeline-name: --station-tours; }
+    footer    { view-timeline-name: --station-enquire; }
+
     @keyframes alt-hero-rise {
       from { transform: scale(1); }
       to   { transform: scale(1.07); }
@@ -124,6 +158,14 @@
     @keyframes alt-fill {
       from { transform: scaleX(0); }
       to   { transform: scaleX(1); }
+    }
+    /* Visible only while the matching section is on screen; opacity is
+       0 at both 0% and 100% so fill-mode "both" clamps correctly to
+       "hidden" before entry and after exit, not stuck at the last frame. */
+    @keyframes alt-station-active {
+      0%, 8%   { opacity: 0; }
+      16%, 84% { opacity: 1; }
+      92%, 100% { opacity: 0; }
     }
 
     .anim-hero-media {
@@ -168,6 +210,31 @@
     .anim-rail-marker {
       animation: alt-ride linear both;
       animation-timeline: scroll(root block);
+    }
+    .anim-station-hero {
+      animation: alt-station-active linear both;
+      animation-timeline: --station-hero;
+      animation-range: cover 0% cover 100%;
+    }
+    .anim-station-hlotse {
+      animation: alt-station-active linear both;
+      animation-timeline: --station-hlotse;
+      animation-range: cover 0% cover 100%;
+    }
+    .anim-station-tsikoane {
+      animation: alt-station-active linear both;
+      animation-timeline: --station-tsikoane;
+      animation-range: cover 0% cover 100%;
+    }
+    .anim-station-tours {
+      animation: alt-station-active linear both;
+      animation-timeline: --station-tours;
+      animation-range: cover 0% cover 100%;
+    }
+    .anim-station-enquire {
+      animation: alt-station-active linear both;
+      animation-timeline: --station-enquire;
+      animation-range: cover 0% cover 100%;
     }
     .anim-progress {
       animation: alt-fill linear both;

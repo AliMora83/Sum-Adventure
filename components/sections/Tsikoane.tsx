@@ -79,7 +79,7 @@ export function Tsikoane() {
 
       <div className="relative z-10 mx-auto max-w-[1180px] px-7 pt-18 lg:pl-[152px]">
         <div className="reveal">
-          <Station elevation={s.elevation} place={s.place} />
+          <Station elevation={s.elevation} place={s.place} provisional={s.provisional} />
           <h2 className="type-display mt-5 text-[clamp(30px,4.4vw,52px)]">
             The footprints are
             <br />

@@ -8,7 +8,7 @@ import { generalEnquiryLink } from "@/lib/whatsapp";
 export function Hero() {
   const s = stations[0];
   return (
-    <section className="relative flex min-h-svh items-end overflow-hidden bg-senqu text-white">
+    <section id="hero" className="relative flex min-h-svh items-end overflow-hidden bg-senqu text-white">
       <div className="anim-hero-media absolute inset-0 origin-[center_40%] bg-gradient-to-b from-[#2C5794] via-maloti to-senqu">
         <Image
           src="/images/skii-1.jpg"

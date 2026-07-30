@@ -1,13 +1,84 @@
 import { railPath, railPathLength, stations, formatElevation } from "@/data/stations";
 
 /**
+ * A small pill (rect + centred text), used for both the tick labels (quiet
+ * state) and the marker's current-elevation readout (emphasised state).
+ * Width is computed from the label so it fits without hand-tuned constants
+ * per station.
+ */
+function ElevationPill({
+  x,
+  y,
+  elevation,
+  provisional,
+  emphasis,
+  className = "",
+}: {
+  x: number;
+  y: number;
+  elevation: number | null;
+  provisional?: boolean;
+  emphasis?: boolean;
+  className?: string;
+}) {
+  const label = formatElevation(elevation) + (provisional ? " prov." : "");
+  const width = Math.round(label.length * 6.6 + 16);
+  const fillCls = emphasis ? "fill-minowane-deep" : "fill-senqu";
+  const textCls = emphasis ? "fill-white" : "fill-mahlasela";
+  const borderCls = provisional
+    ? emphasis
+      ? "stroke-white"
+      : "stroke-minowane"
+    : emphasis
+      ? "stroke-white/25"
+      : "stroke-mahlasela/25";
+
+  return (
+    <g transform={`translate(${x} ${y})`} className={className}>
+      <rect
+        x="0"
+        y="-8"
+        width={width}
+        height="16"
+        rx="8"
+        className={`${fillCls} ${borderCls}`}
+        strokeWidth="1"
+        strokeDasharray={provisional ? "3 2" : undefined}
+      />
+      <text
+        x={width / 2}
+        y="4"
+        textAnchor="middle"
+        className={`font-mono text-[11px] font-medium [font-variant-numeric:tabular-nums] ${textCls}`}
+      >
+        {label}
+      </text>
+    </g>
+  );
+}
+
+/**
  * The signature element: a route profile, not a vertical scale.
  * Rightward deviation means higher. Read as a journey, which is why
  * ascending while scrolling down is legible.
  *
- * The marker rides the actual path via offset-path rather than a faked
- * vertical translate, so it tracks the profile's kinks. Desktop only —
- * on mobile this collapses to ScrollProgress and the per-section chips.
+ * The marker DOT rides the actual path via offset-path rather than a faked
+ * vertical translate, so it tracks the profile's kinks — pure motion, no
+ * data attached. Desktop only — on mobile this collapses to ScrollProgress
+ * and the per-section chips.
+ *
+ * The elevation READOUT is deliberately a separate concern from the dot's
+ * path position. Each station gets its own pill, pre-rendered with its real
+ * data/stations.ts value, anchored at that station's own fixed tick
+ * coordinate (not travelling with the dot) and faded in/out by a named CSS
+ * view-timeline tied to that station's actual section being on screen (see
+ * .anim-station-* in globals.css). Earlier draft had the pills travel with
+ * the dot instead; that broke because the path's segment lengths don't
+ * match the sections' actual rendered heights, so the dot's position and
+ * "which section is really on screen" drift apart — a correct pill could
+ * end up rendered next to the wrong tick. Anchoring to the tick coordinate
+ * sidesteps that: the pill for a station always appears exactly where that
+ * station's tick already is, correct by construction.
  */
 export function AltitudeRail() {
   return (
@@ -49,6 +120,14 @@ export function AltitudeRail() {
             >
               {s.elevation === null ? "tbc" : formatElevation(s.elevation)}
             </text>
+            <ElevationPill
+              x={s.railX + 14}
+              y={s.railY}
+              elevation={s.elevation}
+              provisional={s.provisional}
+              emphasis
+              className={`anim-station-${s.id}`}
+            />
           </g>
         ))}
 

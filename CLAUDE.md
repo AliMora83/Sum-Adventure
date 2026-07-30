@@ -70,12 +70,33 @@ must survive a customer fact-checking it.
 - Unverified elevations render as `Elev. TBC` via `formatElevation()`. Do not
   substitute an estimate, a rounded guess, or a value scraped from an
   unattributed source.
-- `data/stations.ts` holds the elevation spine with sources. Tsikoane plateau is
-  deliberately `null` pending the client.
+- `data/stations.ts` holds the elevation spine with sources.
 - Prices in `data/tours.ts` come from the client's own flyers. Do not adjust,
   round, or add tours that do not exist.
 - Avoid unfalsifiable superlatives in copy ("higher than most countries on
   earth"). Prefer one checkable comparison.
+
+**Fenced exception — Tsikoane's provisional elevation.** Tsikoane's real
+elevation is still unconfirmed, but `data/stations.ts` carries
+`elevation: 2600, provisional: true` for it (Sprint 5) rather than `null`, so
+the altitude rail draws correctly during design work. This is a deliberate,
+temporary breach of the rule above, not a reversal of it:
+
+- `provisional?: boolean` on `Station` — set on Tsikoane only, never on any
+  other station.
+- Every place a provisional elevation renders (rail tick, rail marker pill,
+  section eyebrow via `Station.tsx`'s `provisional` prop) must show a dashed
+  pill border and a "prov." suffix. It must never look like a confirmed value.
+- Guarded in code, not just by convention: `data/stations.ts` throws at
+  build/import time if any station is `provisional: true` while
+  `NEXT_PUBLIC_SITE_URL` is set to anything other than localhost, naming the
+  offending station. This is deliberately a hard failure, not a warning — a
+  warning is exactly what let a stray dummy elevation ("3798m") sit
+  unnoticed on the rail marker for four sprints.
+- When the client supplies the real figure, the only change should be the
+  number and deleting the `provisional` flag. Do not quietly promote 2,600 m
+  to a confirmed value, and do not strip the flag without an actual
+  client-supplied figure.
 
 ### 6. Do not fabricate content
 
@@ -151,6 +172,9 @@ deliberately cut — handwriting fights the cartographic register.
 - `docs/client-profile.md` is the single sanctioned source for company copy
   (mission, values, founder bio, service lines, etc). If it's not in that
   file, it hasn't been supplied — don't invent it.
+- `.anim-parallax`/`alt-settle` in `app/globals.css` are unused. That's a
+  current decision, not an oversight — leave them in place and don't flag or
+  clean them up.
 
 ## Verification before any commit
 
