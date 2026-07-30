@@ -1,0 +1,182 @@
+@import "tailwindcss";
+
+/* ============================================================
+   DIRECTION A · "ALTITUDE" — token system
+   Tailwind v4 is CSS-first: this @theme block replaces
+   tailwind.config.js and generates the utilities.
+
+   Palette is a hypsometric ramp — the colour convention
+   topographic maps use for elevation, valley floor to snowline.
+   ============================================================ */
+@theme {
+  --color-senqu: #0a1b3d;
+  --color-maloti: #17376f;
+  --color-contour: #3e6ba8;
+  --color-mahlasela: #a8cdeb;
+  --color-snowline: #eef5fb;
+
+  /* Two orange values, deliberately. White on --color-minowane is
+     ~3.5:1 — fine for a 40px price numeral, fails AA at 14px.
+     --color-minowane-deep is ~5.8:1 and is the ONLY fill allowed
+     behind small white button text. */
+  --color-minowane: #e8721c;
+  --color-minowane-deep: #a8480a;
+
+  --font-display: var(--font-archivo), system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+
+  --ease-alt: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --spacing-rail: 132px;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    background: var(--color-snowline);
+    color: var(--color-senqu);
+    font-family: var(--font-display);
+    font-variation-settings: "wdth" 100, "wght" 400;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-minowane);
+    outline-offset: 3px;
+  }
+}
+
+@layer components {
+  /* Display face: same family as body, stretched wide and heavy.
+     Expanded rather than condensed reads as ridgeline mass instead of
+     the default "adventure brand" squeeze. */
+  .type-display {
+    font-family: var(--font-display);
+    font-variation-settings: "wdth" 125, "wght" 900;
+    text-transform: uppercase;
+    line-height: 0.92;
+    letter-spacing: -0.005em;
+  }
+
+  /* Every number on the site. Tabular so the rail digits and prices
+     never jitter. */
+  .type-data {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+  }
+
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ============================================================
+   MOTION
+   Finished state is authored above as the default. Motion is layered
+   on only where supported, so Firefox stable renders a complete,
+   correct, static page. Zero JavaScript — there is no "use client"
+   anywhere in this project.
+   ============================================================ */
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    @keyframes alt-hero-rise {
+      from { transform: scale(1); }
+      to   { transform: scale(1.07); }
+    }
+    @keyframes alt-drift-near {
+      from { transform: translate3d(0, -4%, 0); }
+      to   { transform: translate3d(0, 7%, 0); }
+    }
+    @keyframes alt-drift-far {
+      from { transform: translate3d(0, -2%, 0); }
+      to   { transform: translate3d(0, 3.2%, 0); }
+    }
+    @keyframes alt-lift {
+      from { opacity: 0; transform: translate3d(0, 18px, 0); }
+      to   { opacity: 1; transform: none; }
+    }
+    @keyframes alt-settle {
+      from { transform: translate3d(0, -5%, 0); }
+      to   { transform: translate3d(0, 5%, 0); }
+    }
+    /* THE INVERSION: media travels DOWN as you scroll down, so the
+       overhang reads as receding above you. Only Tsikoane does this. */
+    @keyframes alt-overhang {
+      from { transform: translate3d(0, -5%, 0); }
+      to   { transform: translate3d(0, 5%, 0); }
+    }
+    @keyframes alt-tracks-recede {
+      from { transform: translate3d(0, 10px, 0); opacity: 0.35; }
+      to   { transform: translate3d(0, -14px, 0); opacity: 1; }
+    }
+    @keyframes alt-draw {
+      to { stroke-dashoffset: 0; }
+    }
+    @keyframes alt-ride {
+      from { offset-distance: 0%; }
+      to   { offset-distance: 100%; }
+    }
+    @keyframes alt-fill {
+      from { transform: scaleX(0); }
+      to   { transform: scaleX(1); }
+    }
+
+    .anim-hero-media {
+      animation: alt-hero-rise linear both;
+      animation-timeline: view();
+      animation-range: cover 0% cover 100%;
+    }
+    .anim-drift-near {
+      animation: alt-drift-near linear both;
+      animation-timeline: view();
+      animation-range: cover 0% cover 100%;
+    }
+    .anim-drift-far {
+      animation: alt-drift-far linear both;
+      animation-timeline: view();
+      animation-range: cover 0% cover 100%;
+    }
+    .reveal {
+      animation: alt-lift 520ms var(--ease-alt) both;
+      animation-timeline: view();
+      animation-range: entry 12% cover 34%;
+    }
+    .anim-parallax {
+      animation: alt-settle linear both;
+      animation-timeline: view();
+      animation-range: cover 0% cover 100%;
+    }
+    .anim-overhang {
+      animation: alt-overhang linear both;
+      animation-timeline: view();
+      animation-range: cover 0% cover 100%;
+    }
+    .anim-tracks {
+      animation: alt-tracks-recede linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 60%;
+    }
+    .anim-rail-draw {
+      animation: alt-draw linear both;
+      animation-timeline: scroll(root block);
+    }
+    .anim-rail-marker {
+      animation: alt-ride linear both;
+      animation-timeline: scroll(root block);
+    }
+    .anim-progress {
+      animation: alt-fill linear both;
+      animation-timeline: scroll(root block);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { transition-duration: 1ms !important; }
+}
