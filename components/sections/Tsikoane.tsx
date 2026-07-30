@@ -7,17 +7,17 @@ import { tourEnquiryLink } from "@/lib/whatsapp";
 
 /**
  * Six named passes reach the summit. Only Linareng is confirmed — the
- * caves route. The other five are placeholders pending the client.
- * Numbering is legitimate here: these genuinely are enumerated routes
- * to one summit, so the numerals carry information.
+ * caves route. The other five are placeholders pending the client, kept
+ * here (not deleted) so they render automatically once named — see the
+ * render-time filter below.
  */
 const passes = [
-  { n: "01", name: "Linareng Pass", note: "caves route" },
-  { n: "02", name: "Pass two", note: "name tbc" },
-  { n: "03", name: "Pass three", note: "name tbc" },
-  { n: "04", name: "Pass four", note: "name tbc" },
-  { n: "05", name: "Pass five", note: "name tbc" },
-  { n: "06", name: "Pass six", note: "name tbc" },
+  { n: "01", name: "Linareng Pass", note: "caves route", confirmed: true },
+  { n: "02", name: "Pass two", note: "name tbc", confirmed: false },
+  { n: "03", name: "Pass three", note: "name tbc", confirmed: false },
+  { n: "04", name: "Pass four", note: "name tbc", confirmed: false },
+  { n: "05", name: "Pass five", note: "name tbc", confirmed: false },
+  { n: "06", name: "Pass six", note: "name tbc", confirmed: false },
 ];
 
 /** Tridactyl print — three toes and a pad. Vector, not photographic. */
@@ -100,10 +100,10 @@ export function Tsikoane() {
           <div className="reveal">
             <p className="mb-3.5 flex items-center gap-4 font-mono text-xs uppercase tracking-[0.16em] text-mahlasela">
               <span className="h-px w-10 bg-current opacity-30" />
-              Six passes to the summit
+              Summit passes
             </p>
             <ul>
-              {passes.map((p) => (
+              {passes.filter((p) => p.confirmed).map((p) => (
                 <li
                   key={p.n}
                   className="flex items-baseline gap-3.5 border-b border-mahlasela/15 py-3.5 text-[15px]"
@@ -118,6 +118,10 @@ export function Tsikoane() {
                 </li>
               ))}
             </ul>
+            <p className="mt-3.5 font-mono text-[11px] tracking-[0.03em] text-mahlasela/70">
+              Six passes reach the summit — five more names to come as they&rsquo;re
+              confirmed.
+            </p>
           </div>
 
           <div className="reveal">
@@ -136,11 +140,6 @@ export function Tsikoane() {
                 Enquire on WhatsApp
               </Button>
             </div>
-            <p className="mt-9 border border-dashed border-minowane/50 px-4 py-3.5 font-mono text-[11.5px] leading-relaxed tracking-[0.03em] text-mahlasela">
-              No Tsikoane photography supplied. This section is drawn rather than
-              photographic — the minowane above are vector. Needs: plateau summit, cave
-              ceiling prints, bonfire, Basotho meal.
-            </p>
           </div>
         </div>
       </div>
