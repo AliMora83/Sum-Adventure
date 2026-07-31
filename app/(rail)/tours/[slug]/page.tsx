@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!tour) return {};
 
   return buildMetadata({
-    title: `${tour.name} — Sum Adventures`,
+    title: tour.name,
     description: tour.blurb,
     image: tour.image,
     imageAlt: tour.imageAlt,

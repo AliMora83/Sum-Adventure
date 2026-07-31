@@ -5,7 +5,7 @@ import { EnquiryForm } from "@/components/forms/EnquiryForm";
 import { buildMetadata } from "@/lib/site";
 
 export const metadata: Metadata = buildMetadata({
-  title: "Enquire — Sum Adventures",
+  title: "Enquire",
   description:
     "Send Sum Adventures an enquiry for a tour, event or photography booking in Lesotho.",
 });

@@ -11,7 +11,7 @@ import { buildMetadata } from "@/lib/site";
 const flagshipTour = tours.find((t) => t.flagship);
 
 export const metadata: Metadata = buildMetadata({
-  title: "Tours & Packages — Sum Adventures",
+  title: "Tours & Packages",
   description:
     "Guided adventure tours across Lesotho: Afriski winter trips, Tsikoane plateau camping and multi-day packages, run out of Hlotse, Leribe.",
   image: flagshipTour?.image,

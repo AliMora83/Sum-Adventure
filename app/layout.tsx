@@ -4,21 +4,55 @@ import { Masthead } from "@/components/site/Masthead";
 import { Footer } from "@/components/site/Footer";
 import { MobileBar } from "@/components/site/MobileBar";
 import { ScrollProgress } from "@/components/site/AltitudeRail";
-import { siteUrl, defaultOgImage } from "@/lib/site";
+import {
+  siteUrl,
+  siteName,
+  defaultTitle,
+  titleTemplate,
+  defaultDescription,
+  shortDescription,
+  defaultOgImage,
+} from "@/lib/site";
 import "./globals.css";
 
+/**
+ * Site-wide metadata defaults. Routes override via `buildMetadata()` and pass
+ * a bare title; the brand suffix comes from the templates below.
+ *
+ * The template is repeated onto openGraph and twitter deliberately — Next
+ * does not apply `title.template` to `openGraph.title`, so without its own
+ * template every share card would lose the brand name.
+ */
 export const metadata: Metadata = {
   metadataBase: siteUrl,
-  title: "Sum Adventures — More Than Just A Trip",
-  description:
-    "Adventure tours, photography and events across Lesotho and Southern Africa. Tsikoane plateau camping, Afriski winter trips and educational tours, run out of Hlotse, Leribe.",
+  title: {
+    default: defaultTitle,
+    template: titleTemplate,
+  },
+  description: defaultDescription,
+  applicationName: siteName,
   openGraph: {
-    title: "Sum Adventures — More Than Just A Trip",
-    description:
-      "Adventure tours, photography and events across Lesotho and Southern Africa.",
-    locale: "en_ZA",
     type: "website",
+    locale: "en_ZA",
+    siteName,
+    title: {
+      default: defaultTitle,
+      template: titleTemplate,
+    },
+    description: shortDescription,
+    url: "/",
     images: [defaultOgImage],
+  },
+  twitter: {
+    // No handle: social accounts are [UNCONFIRMED] in docs/client-profile.md,
+    // so `site`/`creator` stay unset rather than guessed.
+    card: "summary_large_image",
+    title: {
+      default: defaultTitle,
+      template: titleTemplate,
+    },
+    description: shortDescription,
+    images: [defaultOgImage.url],
   },
 };
 

@@ -4,7 +4,7 @@ import { stations } from "@/data/stations";
 import { buildMetadata } from "@/lib/site";
 
 export const metadata: Metadata = buildMetadata({
-  title: "About — Sum Adventures",
+  title: "About",
   description:
     "Sum Adventures is a Lesotho-based tourism, photography and events company founded by Mpho Noko, run out of Hlotse, Leribe.",
 });
