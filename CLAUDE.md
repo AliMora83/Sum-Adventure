@@ -89,10 +89,24 @@ temporary breach of the rule above, not a reversal of it:
   pill border and a "prov." suffix. It must never look like a confirmed value.
 - Guarded in code, not just by convention: `data/stations.ts` throws at
   build/import time if any station is `provisional: true` while
-  `NEXT_PUBLIC_SITE_URL` is set to anything other than localhost, naming the
-  offending station. This is deliberately a hard failure, not a warning — a
-  warning is exactly what let a stray dummy elevation ("3798m") sit
-  unnoticed on the rail marker for four sprints.
+  `VERCEL_ENV === "production"`, naming the offending station. This is
+  deliberately a hard failure, not a warning — a warning is exactly what let
+  a stray dummy elevation ("3798m") sit unnoticed on the rail marker for
+  four sprints.
+- **The guard keys on `VERCEL_ENV`, not `NEXT_PUBLIC_SITE_URL`. Do not
+  change it back.** Sprint 5 keyed it on "`NEXT_PUBLIC_SITE_URL` is not
+  localhost", which sounds equivalent and is not: every preview deploy has a
+  non-localhost site URL, so the guard failed precisely the builds where the
+  provisional value is *supposed* to be visible for review. As of Sprint 6a
+  `NEXT_PUBLIC_SITE_URL` is a single canonical origin shared by all
+  environments (invariant below), so it carries no information about which
+  environment is building. `VERCEL_ENV` is the only signal that distinguishes
+  production from preview. Preview and local builds must keep rendering the
+  provisional value — blocking them is the bug, not the feature.
+- Consequence, and it is intended: **production builds fail while Tsikoane is
+  provisional.** Production is meant to be blocked until the client supplies
+  the real figure. If a production deploy is failing on this error, the fix is
+  the client's number — not loosening the guard.
 - When the client supplies the real figure, the only change should be the
   number and deleting the `provisional` flag. Do not quietly promote 2,600 m
   to a confirmed value, and do not strip the flag without an actual

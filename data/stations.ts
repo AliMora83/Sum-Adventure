@@ -32,31 +32,32 @@ export const stations: Station[] = [
 
 /**
  * Build guard for the provisional exception above. A provisional elevation
- * is fine on localhost, where it exists so the rail draws correctly during
- * design work — it must never reach the client's live domain. A warning
- * isn't enough here; a warning is exactly what let a stray dummy value
- * ("3798m") sit unnoticed for four sprints. This throws at build/import
- * time, which aborts `next build`.
+ * exists so the rail draws correctly during design work, and it is *meant*
+ * to be visible on localhost and on preview deploys — reviewing it there is
+ * the entire point of carrying it. It must never reach production.
+ *
+ * Keyed on VERCEL_ENV, not on NEXT_PUBLIC_SITE_URL. The original check fired
+ * whenever the site URL was non-localhost, which is true of every preview
+ * deploy, so it broke exactly the builds that are supposed to show the
+ * provisional value. NEXT_PUBLIC_SITE_URL is now a canonical origin shared
+ * by every environment (see lib/site.ts) and says nothing about which
+ * environment is building; VERCEL_ENV is the signal that separates a
+ * production deploy from a preview one.
+ *
+ * Still a hard failure, not a warning — a warning is exactly what let a stray
+ * dummy value ("3798m") sit unnoticed on the rail marker for four sprints.
+ * This throws at build/import time, which aborts `next build`.
  */
-function isLocalSiteUrl(url: string | undefined): boolean {
-  if (!url) return true;
-  try {
-    return new URL(url).hostname === "localhost";
-  } catch {
-    return true;
-  }
-}
-
-if (!isLocalSiteUrl(process.env.NEXT_PUBLIC_SITE_URL)) {
+if (process.env.VERCEL_ENV === "production") {
   for (const s of stations) {
     if (s.provisional) {
       throw new Error(
         `data/stations.ts: station "${s.id}" (${s.place}) has a provisional ` +
-          `elevation (${s.elevation} m) but NEXT_PUBLIC_SITE_URL is set to ` +
-          `"${process.env.NEXT_PUBLIC_SITE_URL}", not localhost. Provisional ` +
-          `data must never ship to a live domain — get the real figure from ` +
-          `the client, or unset NEXT_PUBLIC_SITE_URL if this really is a ` +
-          `local/preview build.`
+          `elevation (${s.elevation} m) and VERCEL_ENV is "production". ` +
+          `Provisional data must never ship to production — get the real ` +
+          `figure from the client and delete the \`provisional\` flag. ` +
+          `Preview and local builds are unaffected and will keep rendering ` +
+          `it as visibly unconfirmed.`
       );
     }
   }
