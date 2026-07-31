@@ -7,6 +7,7 @@ export const metadata: Metadata = buildMetadata({
   title: "About",
   description:
     "Sum Adventures is a Lesotho-based tourism, photography and events company founded by Mpho Noko, run out of Hlotse, Leribe.",
+  path: "/about",
 });
 
 const values = ["Adventure", "Community Development", "Sustainability", "Professionalism"];

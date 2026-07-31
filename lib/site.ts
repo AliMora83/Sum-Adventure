@@ -54,11 +54,17 @@ export const defaultTitle = `${siteName} — More Than Just A Trip`;
 export const titleTemplate = `%s — ${siteName}`;
 
 /**
- * Drawn only from docs/client-profile.md — service lines, destinations,
- * products and base. No claim here that isn't in that file.
+ * Drawn only from docs/client-profile.md — service lines, destinations and
+ * products. No claim here that isn't in that file.
+ *
+ * The "run out of Hlotse, Leribe" clause was cut in Sprint 6b: it pushed this
+ * past the ~155 characters a search result shows, so it was truncated away
+ * anyway, and it appeared verbatim at the end of three descriptions, which
+ * reads as boilerplate. It now appears on /about only, where the company's
+ * base is the actual subject.
  */
 export const defaultDescription =
-  "Adventure tours, photography and events across Lesotho and Southern Africa. Tsikoane plateau camping, Afriski winter trips and educational tours, run out of Hlotse, Leribe.";
+  "Adventure tours, photography and events across Lesotho and Southern Africa. Tsikoane plateau camping, Afriski winter trips and educational tours.";
 
 /** Shorter variant for share cards, where long descriptions get truncated. */
 export const shortDescription =
@@ -73,6 +79,9 @@ export const defaultOgImage = {
   alt: "Snow-covered peaks of the Maloti mountains, Lesotho",
 };
 
+/** Locale for og:locale and <html lang>. Site is South African English. */
+export const ogLocale = "en_ZA";
+
 /**
  * Shared shape for title + description + a matching share image.
  *
@@ -80,15 +89,30 @@ export const defaultOgImage = {
  * in app/layout.tsx. Twitter fields are set explicitly because Next does not
  * fall back from openGraph to twitter per-route; without them every page
  * would inherit the homepage's card.
+ *
+ * `type`, `locale` and `siteName` are repeated here rather than inherited
+ * from the root layout because **Next replaces the `openGraph` object
+ * wholesale, it does not deep-merge it**. Before Sprint 6b every route that
+ * called this function silently dropped og:site_name, og:locale and og:type,
+ * which the root layout does set — only the homepage, which had no metadata
+ * of its own, kept them. Removing any of these will quietly reintroduce that.
+ *
+ * `path` is a root-relative route ("/tours"), resolved against metadataBase
+ * for both og:url and the canonical link. It is required rather than
+ * optional so a new route cannot forget it — every call site is a type error
+ * until it supplies one. Never pass an absolute URL: the host must keep
+ * coming from NEXT_PUBLIC_SITE_URL.
  */
 export function buildMetadata({
   title,
   description,
+  path,
   image = defaultOgImage.url,
   imageAlt = defaultOgImage.alt,
 }: {
   title: string;
   description: string;
+  path: string;
   image?: string;
   imageAlt?: string;
 }): Metadata {
@@ -96,9 +120,14 @@ export function buildMetadata({
   return {
     title,
     description,
+    alternates: { canonical: path },
     openGraph: {
+      type: "website",
+      locale: ogLocale,
+      siteName,
       title,
       description,
+      url: path,
       images,
     },
     twitter: {

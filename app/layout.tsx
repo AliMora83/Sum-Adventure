@@ -12,6 +12,7 @@ import {
   defaultDescription,
   shortDescription,
   defaultOgImage,
+  ogLocale,
 } from "@/lib/site";
 import "./globals.css";
 
@@ -33,7 +34,7 @@ export const metadata: Metadata = {
   applicationName: siteName,
   openGraph: {
     type: "website",
-    locale: "en_ZA",
+    locale: ogLocale,
     siteName,
     title: {
       default: defaultTitle,

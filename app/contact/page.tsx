@@ -7,7 +7,8 @@ import { buildMetadata } from "@/lib/site";
 export const metadata: Metadata = buildMetadata({
   title: "Enquire",
   description:
-    "Send Sum Adventures an enquiry for a tour, event or photography booking in Lesotho.",
+    "Send Sum Adventures an enquiry about a tour, event or photography booking in Lesotho — by form or on WhatsApp.",
+  path: "/contact",
 });
 
 type Props = {

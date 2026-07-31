@@ -93,3 +93,32 @@ export const tours: Tour[] = [
 export function formatPrice(zar: number): string {
   return `R${zar.toLocaleString("en-ZA")}`;
 }
+
+/**
+ * The single predicate for "is this tour past". `status` is the only source
+ * of truth — nothing infers it from a date (see CLAUDE.md invariant 8).
+ * Used by the badge and by the metadata description so the two cannot drift.
+ */
+export function isPastTour(tour: Pick<Tour, "status">): boolean {
+  return tour.status === "past";
+}
+
+/** The customer-facing wording for that status, in one place. */
+export const PAST_TOUR_LABEL = "Past trip";
+
+/**
+ * Description for share cards and search snippets.
+ *
+ * A past tour's blurb reads as a live offer on its own — "Snow in Lesotho,
+ * and back the same day. Transport and entry included" is indistinguishable
+ * from a bookable trip. On the page that's fine: the badge, the missing price
+ * CTA and the missing Enquire button all say otherwise. A search result or a
+ * shared link has none of those. The description is the only signal that
+ * travels, so the status has to ride inside it, and it goes first so it
+ * survives truncation.
+ */
+export function tourDescription(tour: Pick<Tour, "status" | "blurb">): string {
+  return isPastTour(tour)
+    ? `${PAST_TOUR_LABEL} — this has already run. ${tour.blurb}`
+    : tour.blurb;
+}

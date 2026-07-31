@@ -6,7 +6,7 @@ import { Station } from "@/components/ui/Station";
 import { Contours } from "@/components/ui/Contours";
 import { Button } from "@/components/ui/Button";
 import { TourBadge } from "@/components/ui/TourBadge";
-import { tours, formatPrice } from "@/data/tours";
+import { tours, formatPrice, tourDescription } from "@/data/tours";
 import { tourEnquiryLink } from "@/lib/whatsapp";
 import { buildMetadata } from "@/lib/site";
 
@@ -24,8 +24,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!tour) return {};
 
   return buildMetadata({
+    // Title is unchanged for past tours — the status belongs in the
+    // description, which is the part that travels into a search snippet.
     title: tour.name,
-    description: tour.blurb,
+    description: tourDescription(tour),
+    path: `/tours/${tour.slug}`,
     image: tour.image,
     imageAlt: tour.imageAlt,
   });
