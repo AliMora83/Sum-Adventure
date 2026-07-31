@@ -119,13 +119,23 @@ R4,600 per person · minimum 6 pax · weekend
 Includes: accommodation · daily breakfast · transport · Afriski entrance fee ·
 full snowpass · equipment rental · ski lesson for all levels · tubing
 
-### Afriski Winter Day Trip — PAST TRIP
+### Afriski Winter Day Trip — STANDING ACTIVITY
 
 R900 pp (transport & entry) / R1,100 pp (with bum boarding) · R300 deposit ·
-departed from Maputsoe · ran Saturday 25 July 2026
+departs from Maputsoe · the flyer date was Saturday 25 July 2026
 
-**Status: past.** Client's decision is to retain it on the site as a past trip.
-Render with no price CTA and no Enquire button — see CLAUDE.md.
+**Status: upcoming.** Superseded in Sprint 5.5 — this section previously read
+"PAST TRIP / Status: past", from the client's Sprint 4.5 instruction after the
+flyer date lapsed. The client then asked for it to be presented as a
+**standing, always-available activity**, with dates agreed per enquiry rather
+than tied to the one flyer date. It renders as a normal bookable tour.
+
+The 25 July 2026 date is retained above as provenance for the pricing only.
+**Do not treat it as an expiry.** Nothing in the site infers bookability from
+a date — there is no date field on `Tour` and none should be added. `status`
+flips to `past` only on the client's actual instruction. See CLAUDE.md
+invariant 8, and `docs/launch-checklist.md` for the manual-step risk this
+creates.
 
 ### Educational tours
 

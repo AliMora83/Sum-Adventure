@@ -54,6 +54,41 @@ silently.
 
 ---
 
+## Standing manual steps — no automation will catch these
+
+### A tour goes past only when someone sets the flag by hand
+
+**There is no date filtering anywhere in this project, by design.** `Tour` has
+no date field, nothing computes "has this departure lapsed", and no scheduled
+job flips anything. A tour becomes past when a human edits
+`status: "upcoming"` to `status: "past"` in `data/tours.ts` — and only then.
+
+That is deliberate (CLAUDE.md invariant 8): the Afriski Winter Day Trip was
+marked past in Sprint 4.5 because its flyer date had lapsed, and the client
+then asked for it back as a standing, always-available activity with dates
+agreed per enquiry. Inferring bookability from a date got the wrong answer for
+a real product, so the inference was removed rather than fixed.
+
+**The cost of that decision is that the manual step has no reminder attached.**
+Nothing prompts anyone, nothing warns when a departure date has passed,
+nothing fails a build. If a tour genuinely ends and nobody edits the file, the
+site keeps presenting it as bookable — with a live price, an Enquire button
+and a WhatsApp booking link — indefinitely. The failure is silent and it is
+customer-facing.
+
+Two consequences worth knowing:
+
+- The past-tour treatment is currently **unexercised in production**. As of
+  Sprint 6b no tour carries `status: "past"`, so the badge, the `/tours`
+  "Past trips" section and the `"Past trip — this has already run."`
+  metadata prefix have never rendered from real data. The prefix was verified
+  against a declared fixture, not a real tour.
+- Only the client can authorise the flip. Do not set it from a lapsed flyer
+  date — that is the exact inference Sprint 5.5 reversed.
+
+Before launch, agree with Mpho who owns this check and how often it happens.
+A recurring human review is the only control that exists.
+
 ## Required configuration
 
 ### `NEXT_PUBLIC_SITE_URL` must be set per environment
