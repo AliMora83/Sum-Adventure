@@ -148,6 +148,47 @@ There is currently no JSON-LD or other structured data on the site. If any is
 added later, filter past tours out of it — a `Product`/`Event` schema listing
 a dead departure as bookable is worse than shipping no schema at all.
 
+### 9. Never invent a config value — and label every stand-in
+
+Invariant 5 covers the data layer: elevations, prices, tour names. This one
+covers **config**: hostnames, domains, deploy aliases, env values, account
+names, IDs, keys, paths to things that live outside this repo.
+
+The rule, in two halves:
+
+- **Any stand-in must be obviously fake.** Use reserved-for-testing values
+  only — `example.invalid`, `example.com`, `example.test`. Never a value that
+  could be mistaken for real config.
+- **Declare it as a stand-in wherever it is reported.** This applies to
+  anything that reaches a human — a report, a summary, a results table, a
+  commit message — not only to what gets written to a file. An undeclared
+  stand-in in a table of results is presented as a finding.
+
+**Why, because the prohibition alone is easy to work around.** Config values
+have a property data values don't: they are *copied*. A number that looks
+plausible gets fact-checked by a customer and caught. A hostname that looks
+plausible gets pasted into a Vercel environment variable, and
+`NEXT_PUBLIC_SITE_URL` is the root of `metadataBase` — it becomes every
+canonical link, every OG image URL and the `sitemap.xml` origin at once.
+Nothing downstream validates it, because a well-formed URL is exactly what
+that code expects. The site would come up looking entirely correct while
+publishing a domain nobody owns.
+
+The failure mode is specifically that *plausible* is worse than *wrong*.
+`example.invalid` in a report is self-evidently a placeholder and survives
+being skim-read; `sumadventures.co.ls` — right company, right TLD for
+Lesotho — is indistinguishable from real config and does not.
+
+This came from Sprint 6b. The production `robots.txt` branch cannot be
+reached by a real build while Tsikoane is provisional (invariant 5), so it
+was evaluated by passing a made-up production domain, and that domain was
+then reported in a results table with no indication it was invented. The
+value never touched a file — the defect was reporting it as though it were
+configuration. See `docs/launch-checklist.md`.
+
+Where a real value genuinely isn't known yet, that is a blocker to record,
+not a gap to fill: leave it unset and say so.
+
 ---
 
 ## Design direction: "Altitude"
@@ -210,7 +251,13 @@ grep -rn "tailwind.config" .                    # expect: nothing
 Confirm with me before: installing any dependency, deleting files, force-pushing,
 or changing `data/stations.ts` elevation values.
 
-## Outstanding from the client
+## Outstanding
+
+Engineering blockers — things that can only be verified on real
+infrastructure — live in `docs/launch-checklist.md`. Nothing there may be
+ticked off from a local build. Items waiting on the client are below.
+
+### From the client
 
 - Tsikoane plateau elevation (one `null` in `data/stations.ts`)
 - Names of five summit passes
