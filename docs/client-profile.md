@@ -137,6 +137,18 @@ flips to `past` only on the client's actual instruction. See CLAUDE.md
 invariant 8, and `docs/launch-checklist.md` for the manual-step risk this
 creates.
 
+**Scheduled flip: 31 August 2026.** This tour is to be set to
+`status: "past"` on that date. Owner: Ali. A single dated action requiring a
+repo edit and a redeploy — not a recurring review, and not something the site
+does on its own. See `docs/launch-checklist.md`.
+
+Note the two are in tension and neither is settled here: the
+"standing, always-available activity" framing above is still **[UNCONFIRMED]**
+by Mpho, and a standing activity would not normally carry a flip date at all.
+Both facts are recorded as they stand. Confirming the framing with Mpho may
+change whether the 31 August flip should happen; do not treat either as
+resolved.
+
 ### Educational tours
 
 For primary schools, high schools, universities and colleges. Combine education

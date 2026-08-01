@@ -78,16 +78,34 @@ customer-facing.
 
 Two consequences worth knowing:
 
-- The past-tour treatment is currently **unexercised in production**. As of
-  Sprint 6b no tour carries `status: "past"`, so the badge, the `/tours`
-  "Past trips" section and the `"Past trip — this has already run."`
-  metadata prefix have never rendered from real data. The prefix was verified
-  against a declared fixture, not a real tour.
+- The past-tour render path is **verified locally against real data, and
+  nowhere else.** On 1 August 2026 (Sprint 6c) `data/tours.ts` was flipped
+  locally to put Afriski at `status: "past"`, built, served with `npm start`
+  and curled. That run covered: homepage exclusion, the `/tours` live/past
+  partition, CTA suppression on the detail route, the `Past trip` badge, the
+  metadata description, and structured data. The data change was reverted and
+  never committed. Details in `docs/sprint-6c.md`.
+
+  It has **never rendered in production**, and it does not become
+  production-verified by this. No tour carries `status: "past"` in committed
+  data, and production builds are blocked while Tsikoane is provisional, so
+  the path cannot reach a real deploy at all yet. It stays locally-verified
+  only until the client's elevation figure unblocks a production build and
+  a real past tour is observed on the live origin.
 - Only the client can authorise the flip. Do not set it from a lapsed flyer
   date — that is the exact inference Sprint 5.5 reversed.
 
-Before launch, agree with Mpho who owns this check and how often it happens.
-A recurring human review is the only control that exists.
+**The scheduled flip.** Afriski Winter Day Trip is flipped to
+`status: "past"` on 31 August 2026. Owner: Ali. This is a single dated
+action, not a recurring review. It requires a repo edit and a redeploy, so
+it cannot be delegated to Mpho.
+
+Scheduling it **assigns** the control; it does not **add** one. Everything
+above still holds — there is no date field, no date filtering, no job, no
+prompt, no warning and no build failure. Nothing in the codebase knows about
+31 August 2026. If the date passes and nobody makes the edit, the site keeps
+presenting the tour as bookable, exactly as described above. The date is a
+calendar commitment held by a person, and that person is the only mechanism.
 
 ## Required configuration
 
