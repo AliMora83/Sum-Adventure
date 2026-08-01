@@ -259,7 +259,18 @@ ticked off from a local build. Items waiting on the client are below.
 
 ### From the client
 
-- Tsikoane plateau elevation (one `null` in `data/stations.ts`)
+- **Tsikoane confirmed elevation.** Currently `elevation: 2600,
+  provisional: true` in `data/stations.ts` (the fenced exception in invariant
+  5), and `elevation: null` on the Tsikoane tour in `data/tours.ts`.
+  **This one figure is the single blocker on three separate items:**
+  1. production `robots.txt` verification (`docs/launch-checklist.md`)
+  2. `X-Robots-Tag` absence-in-production verification (same file)
+  3. past-tour production rendering — verified locally on 1 August 2026,
+     never in production (`docs/sprint-6c.md`)
+
+  Three items, one dependency: the provisional guard fails every
+  `VERCEL_ENV=production` build while the flag is set, so none of the three
+  can be observed on a real deploy until the client supplies the number.
 - Names of five summit passes
 - Tsikoane photography: plateau summit, cave ceiling, bonfire, Basotho meal
 - Mpho Noko portrait (initials placeholder in `Hlotse.tsx`)
@@ -267,3 +278,9 @@ ticked off from a local build. Items waiting on the client are below.
 - Confirmation that *minowane* is the customer-facing term
 - Tagline conflict: logo says "Travel is adventure having fun", profile and all
   flyers say "More Than Just A Trip". Site uses the latter.
+- Does the Afriski Winter Day Trip repeat, or was 25 July 2026 a one-off
+  departure? The site currently presents it as a standing activity and that
+  framing is unconfirmed. See `docs/client-profile.md` and the 31 August 2026
+  scheduled flip in `docs/launch-checklist.md` — the answer decides whether
+  that flip should happen at all.
+- When does the Afriski season close?
