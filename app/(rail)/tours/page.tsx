@@ -4,7 +4,7 @@ import Image from "next/image";
 import { Station } from "@/components/ui/Station";
 import { TourBadge } from "@/components/ui/TourBadge";
 import { stations, formatElevation } from "@/data/stations";
-import { tours, formatPrice } from "@/data/tours";
+import { tours, formatPrice, isPastTour } from "@/data/tours";
 import { tourEnquiryLink } from "@/lib/whatsapp";
 import { buildMetadata } from "@/lib/site";
 
@@ -21,8 +21,8 @@ export const metadata: Metadata = buildMetadata({
 
 export default function ToursIndexPage() {
   const s = stations[3];
-  const liveTours = tours.filter((t) => t.status !== "past");
-  const pastTours = tours.filter((t) => t.status === "past");
+  const liveTours = tours.filter((t) => !isPastTour(t));
+  const pastTours = tours.filter((t) => isPastTour(t));
 
   return (
     <section className="relative bg-snowline pb-26 pt-[140px]">

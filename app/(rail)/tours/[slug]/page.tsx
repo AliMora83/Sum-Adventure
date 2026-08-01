@@ -6,7 +6,7 @@ import { Station } from "@/components/ui/Station";
 import { Contours } from "@/components/ui/Contours";
 import { Button } from "@/components/ui/Button";
 import { TourBadge } from "@/components/ui/TourBadge";
-import { tours, formatPrice, tourDescription } from "@/data/tours";
+import { tours, formatPrice, tourDescription, isPastTour } from "@/data/tours";
 import { tourEnquiryLink } from "@/lib/whatsapp";
 import { buildMetadata } from "@/lib/site";
 
@@ -68,7 +68,7 @@ export default async function TourDetailPage({ params }: Props) {
           <Station
             elevation={tour.elevation}
             place={tour.place}
-            className={tour.flagship || tour.status === "past" ? "mt-4" : "mt-6"}
+            className={tour.flagship || isPastTour(tour) ? "mt-4" : "mt-6"}
           />
           <h1 className="type-display mt-4 text-[clamp(34px,6vw,64px)]">{tour.name}</h1>
           <p className="mt-5 max-w-[52ch] text-[16.5px] text-[#dce9f6]">{tour.blurb}</p>
@@ -93,7 +93,7 @@ export default async function TourDetailPage({ params }: Props) {
               </ul>
             </div>
 
-            {tour.status === "past" ? (
+            {isPastTour(tour) ? (
               <div className="h-fit border border-contour/20 bg-white p-8">
                 <div className="type-data text-[clamp(28px,3.4vw,36px)] leading-none tracking-tight text-[#5B6C90]">
                   Ran for {formatPrice(tour.priceFrom)}

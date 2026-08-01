@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { Station } from "@/components/ui/Station";
 import { TourBadge } from "@/components/ui/TourBadge";
-import { tours, formatPrice } from "@/data/tours";
+import { tours, formatPrice, isPastTour } from "@/data/tours";
 import { tourEnquiryLink } from "@/lib/whatsapp";
 import { stations, formatElevation } from "@/data/stations";
 
@@ -9,7 +9,7 @@ export function TourGrid() {
   const s = stations[3];
   // Past tours never appear in the featured homepage grid — see /tours
   // for the separate "past trips" section.
-  const liveTours = tours.filter((t) => t.status !== "past");
+  const liveTours = tours.filter((t) => !isPastTour(t));
   return (
     <section id="tours" className="relative bg-snowline py-26">
       <div className="mx-auto max-w-[1180px] px-7 lg:pl-[152px]">
