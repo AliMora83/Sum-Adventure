@@ -15,9 +15,14 @@ export type Station = {
   railY: number;
   /**
    * Fenced exception to "never invent a number" — see CLAUDE.md invariant 5.
-   * Set ONLY on Tsikoane, and only until the client supplies a real figure.
-   * Every place a provisional elevation renders must show it as visibly
-   * unconfirmed. Guarded below so it can't ship to a live domain.
+   * Currently set on NO station: Tsikoane, the only station that ever carried
+   * it, was confirmed at 1,881 m by the client and the flag was removed.
+   *
+   * The mechanism stays for the next figure that needs it. If you set this,
+   * every place the elevation renders must show it as visibly unconfirmed
+   * (dashed pill, "prov." suffix — Station.tsx and AltitudeRail.tsx already
+   * do this), and the guard below will block production builds until a real
+   * figure replaces it.
    */
   provisional?: boolean;
 };
@@ -25,16 +30,23 @@ export type Station = {
 export const stations: Station[] = [
   { id: "hero",     elevation: 1400, place: "Lowest point in Lesotho", railX: 20, railY: 60 },
   { id: "hlotse",   elevation: 1631, place: "Hlotse, Leribe",          railX: 23, railY: 180 },
-  { id: "tsikoane", elevation: 2600, place: "Tsikoane plateau",        railX: 26, railY: 300, provisional: true },
+  { id: "tsikoane", elevation: 1881, place: "Tsikoane plateau",        railX: 26, railY: 300 },
   { id: "tours",    elevation: 3222, place: "Mahlasela Pass",          railX: 52, railY: 420 },
   { id: "enquire",  elevation: 3482, place: "Thabana Ntlenyana",       railX: 58, railY: 540 },
 ];
 
 /**
- * Build guard for the provisional exception above. A provisional elevation
- * exists so the rail draws correctly during design work, and it is *meant*
- * to be visible on localhost and on preview deploys — reviewing it there is
- * the entire point of carrying it. It must never reach production.
+ * Build guard for the provisional exception above.
+ *
+ * As of Sprint 7 no station is flagged, so this loop is a no-op and
+ * production builds pass. That is the correct resting state — the guard is
+ * not dead code awaiting deletion, it is the mechanism that makes the
+ * exception safe to use again. Leave it in place.
+ *
+ * A provisional elevation exists so the rail draws correctly during design
+ * work, and it is *meant* to be visible on localhost and on preview deploys
+ * — reviewing it there is the entire point of carrying it. It must never
+ * reach production.
  *
  * Keyed on VERCEL_ENV, not on NEXT_PUBLIC_SITE_URL. The original check fired
  * whenever the site URL was non-localhost, which is true of every preview

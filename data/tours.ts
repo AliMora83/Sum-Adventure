@@ -45,7 +45,7 @@ export const tours: Tour[] = [
     name: "Tsikoane Plateau Camping",
     duration: "3 days / 2 nights",
     priceFrom: 2200,
-    elevation: null,
+    elevation: 1881,
     place: "Tsikoane, Leribe",
     blurb:
       "Minowane on the cave ceiling, San rock art, horse riding and Basotho meals under the stars.",
