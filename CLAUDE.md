@@ -238,6 +238,10 @@ deliberately cut — handwriting fights the cartographic register.
 - `.anim-parallax`/`alt-settle` in `app/globals.css` are unused. That's a
   current decision, not an oversight — leave them in place and don't flag or
   clean them up.
+- `public/images/footprints-1.jpg`, `footprints-3.jpeg`, `sum-icon.png` and
+  `sum-logo.png` are tracked and deliberately unreferenced — client-supplied,
+  committed in Sprint 7 to be backed up, and reserved for the Gallery section
+  in Phase 2. They are not dead assets; do not delete them.
 
 ## Verification before any commit
 

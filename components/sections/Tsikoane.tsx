@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Station } from "@/components/ui/Station";
 import { Contours } from "@/components/ui/Contours";
 import { Button } from "@/components/ui/Button";
@@ -89,7 +90,47 @@ export function Tsikoane() {
         <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-mahlasela/50 to-transparent" />
       </div>
 
-      <div className="anim-overhang absolute -inset-y-[8%] inset-x-0 bg-gradient-to-b from-[#1F4480] via-maloti to-senqu" />
+      {/* The overhang. Still the inversion layer — .anim-overhang travels
+          DOWN as you scroll down, and the photograph now rides it, so the
+          rock face recedes above you instead of the flat gradient doing it
+          alone. Real minowane, client-supplied: the vector prints on the
+          ceiling above stay vector, this is the wall behind the copy.
+
+          The section's own gradient is unchanged in colour and direction —
+          it moves from being the layer's background to being an overlay
+          composited over the photograph, which is the only way both can be
+          on screen at once.
+
+          Its opacity is set by contrast, not by taste, and the binding
+          constraint is the orange <em> in the h2. Measured per-pixel over
+          the composited image across the full parallax excursion, minowane
+          against the lightest rock that can travel behind it runs 2.56:1 at
+          0.82 and 2.97:1 at 0.90 — both under the 3.0 that WCAG AA wants
+          for large text. 0.94 gives 3.16:1 desktop / 3.20:1 mobile.
+          Everything else here has room to spare (white h2 9.67:1, body
+          7.72:1, mono gloss 6.23:1), so the orange sets the number.
+
+          For reference the flat gradient this replaced measured 3.51:1 on
+          the same orange — the section was already near the line, and the
+          photograph spends most of what was left.
+
+          Do not lower this to show more of the photograph, and do not fix a
+          failure here by changing the type colour — minowane on a large
+          display heading is the sanctioned use under invariant 3, and
+          minowane-deep is a fill colour, not a text colour. If the section
+          needs more rock visible, the answer is a darker crop or a second
+          scrim, measured again. */}
+      <div className="anim-overhang absolute -inset-y-[8%] inset-x-0 bg-maloti">
+        <Image
+          src="/images/footprints-2.jpeg"
+          alt=""
+          aria-hidden="true"
+          fill
+          sizes="100vw"
+          className="object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#1F4480] via-maloti to-senqu opacity-[0.94]" />
+      </div>
       <Contours depth="far" />
 
       <div className="relative z-10 mx-auto max-w-[1180px] px-7 pt-18 lg:pl-[152px]">
