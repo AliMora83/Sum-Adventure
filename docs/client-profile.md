@@ -203,18 +203,31 @@ Longer first-person bio requested from client, not yet supplied.
 
 Sky blue · yellow/orange · black · white
 
-**Superseded.** The site uses the approved navy / icy-blue / orange system in
-`app/globals.css`. Do not reintroduce the stated palette.
+**Superseded — and the replacement is now derived from the client's own logo.**
+As of Sprint 6C the site uses a teal/gold system in `app/globals.css`: `teal`
+`#219389` and `gold` `#D9AA5E` sampled directly from `SumAdv_icon.png` /
+`SumAdv_logo.png`, with `teal-deep`, `teal-light`, `surface-dark` and `ice`
+derived from those to meet contrast. Do not reintroduce "sky blue · yellow/
+orange · black · white" as stated above, and do not reintroduce the navy /
+icy-blue system that sat here from Sprint 3 to Sprint 7.
 
-The client approved a **logo recolour** to match, in Sprint 4.5. That approval
-has **never been implemented** — `components/site/Masthead.tsx` still renders
-the supplied `sumadv-icon.png` unmodified and the mark is still teal. Approval
-is not landing; do not read this paragraph as a record of completed work.
+The **logo recolour** the client approved in Sprint 4.5 is moot and was never
+implemented. The direction reversed: rather than recolouring the mark to match
+a navy site, the site was repalleted to match the mark. The client's artwork
+ships unmodified.
 
-A wider **repalette** is also approved in principle and **not started**. It is
-blocked on three values from Ali, none of which have been supplied: the deep
-teal that passes AA at 13px white text, the dark surface replacement for navy,
-and whether gold survives as CTA fill.
+The **repalette** was blocked on three values from Ali. All three arrived and
+landed in Sprint 6C: `teal-deep #15665F` (passes AA at 13px white text),
+`surface-dark #072B28` (the dark surface replacing navy), and gold's role —
+it survives, but on dark surfaces only and **not** as the CTA fill, because
+gold on white is 2.13 and fails both the text and the 3:1 non-text minimum.
+CTA fills on light backgrounds are `surface-dark`.
+
+Still outstanding from the client: a **knockout/reversed logo variant** for
+dark backgrounds. The supplied PNG is a teal mark with a dark-grey wordmark on
+white and is unusable on `surface-dark`, so the footer currently renders the
+wordmark as type with no mark. The existing PNG must not be inverted or
+recoloured as a stand-in.
 
 ## Not supplied — do not fabricate
 

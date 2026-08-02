@@ -18,7 +18,7 @@ export function TourBadge({
   if (isPastTour(tour)) {
     return (
       <span
-        className={`bg-[#5B6C90] px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-white ${className}`}
+        className={`bg-[#586A67] px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-white ${className}`}
       >
         {PAST_TOUR_LABEL}
       </span>
@@ -27,7 +27,7 @@ export function TourBadge({
   if (tour.flagship) {
     return (
       <span
-        className={`bg-minowane-deep px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-white ${className}`}
+        className={`bg-surface-dark px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-white ${className}`}
       >
         Flagship
       </span>

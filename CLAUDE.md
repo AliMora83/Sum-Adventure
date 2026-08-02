@@ -43,16 +43,56 @@ timelines simultaneously.
 Tokens live in the `@theme` block in `app/globals.css`. **Do not create
 `tailwind.config.js` or `tailwind.config.ts`.** Add new tokens to `@theme`.
 
-### 3. Two orange values, and they are not interchangeable
+### 3. The palette is split by contrast, and the splits are not cosmetic
 
-| Token | Use |
-| --- | --- |
-| `minowane` | Large numerals, prices, badges, the rail marker |
-| `minowane-deep` | Any fill sitting behind small white text |
+Superseded the navy/icy-blue/orange ramp (`senqu`, `maloti`, `contour`,
+`mahlasela`, `snowline`, `minowane`, `minowane-deep`) in Sprint 6C. Those token
+names are gone; do not reintroduce them.
 
-`minowane` measures about 3.5:1 against white — fine for a 40px price, fails
-WCAG AA at 13px. The `Button` component only ever uses `minowane-deep`. Do not
-"simplify" these into one value.
+| Token | Hex | Use |
+| --- | --- | --- |
+| `teal` | `#219389` | Brand mark, large fills, type ≥24px, rail furniture |
+| `teal-deep` | `#15665F` | 13px white text, links on white, borders |
+| `teal-light` | `#4FBFB3` | Accents **on dark surfaces only** |
+| `surface-dark` | `#072B28` | The default dark pairing; CTA fills on light |
+| `ice` | `#EDF6F4` | Page background |
+| `gold` | `#D9AA5E` | Prices, badges, fills — **on dark surfaces only** |
+| `ink` | `#101418` | Body text; the only text colour allowed on gold |
+
+**Provenance.** teal, gold and the wordmark grey were sampled from the client's
+`SumAdv_icon.png` / `SumAdv_logo.png`. teal-deep, teal-light, surface-dark and
+ice are *derived* from those samples to meet contrast. They are design
+decisions, not client-supplied brand values. Do not alter any of them without
+asking.
+
+The rules that make the splits necessary, all measured:
+
+- `teal` is 3.75 on white — fine for a 40px numeral, **fails AA at 13px.**
+  Never use it as, or behind, small white text. Use `teal-deep` (6.78).
+- `gold` is 7.12 on `surface-dark` but **2.13 on white and 1.94 on ice** — it
+  fails every text threshold on a light background, including the 3.0 for
+  large type. Gold is a dark-surface colour, full stop. Text on a gold fill is
+  `ink` (8.69), never white (1.94).
+- `teal-light` is 6.81 on `surface-dark` but **2.02 on ice** — it fails even
+  the 3:1 non-text minimum on a light surface. Dark surfaces only, and a
+  *mid*-teal gradient stop does not count as a dark surface (see Tsikoane).
+- `surface-dark` on white is 15.16 and is the default dark pairing.
+- Anything that has to sit over **both** tones — the altitude rail, chiefly —
+  uses `teal`, the only value clearing 3:1 against both ice (3.41) and
+  surface-dark (4.04).
+
+`Station.tsx` picks its elevation figure from its `tone` prop for exactly this
+reason: gold on dark, teal-deep on light. Do not collapse that into one value.
+
+### 3b. Radius scale, and nothing is fully rounded
+
+`--radius-sm: 8px` (inputs, badges, small chips) · `--radius-md: 12px` (cards,
+images, controls nested inside a 16px container) · `--radius-lg: 16px`
+(standalone buttons, the navbar pill).
+
+**No `rounded-full`, no 999px, anywhere.** A control nested inside a
+`radius-lg` container steps down to `radius-md` — that is why the masthead's
+Enquire CTA is 12px inside the 16px pill.
 
 ### 4. Motion is a progressive enhancement
 
@@ -233,12 +273,18 @@ real minowane — is now the section background, riding inside `.anim-overhang`
 so it carries the inversion, with the section's existing gradient over it as
 a scrim. Photograph behind the copy, drawing on the ceiling: both, not either.
 
-The scrim opacity is **0.94 and is set by measured contrast, not by taste.**
-The orange `<em>` in that h2 is the binding constraint — it measures 3.16:1
-(desktop) / 3.20:1 (mobile) against the worst pixel the parallax can bring
-behind it, against the 3.0 WCAG AA wants for large text. It fails at 0.90.
+The scrim is **0.94 opacity over a deliberately narrow dark-teal ramp**
+(`#0E4843 → #0B3A35 → surface-dark`), and both the opacity and the stops are
+set by measured contrast, not taste. The repalette's first pass put a *mid*
+teal at the top of that ramp and broke two things at once: the gold `<em>` in
+the h2 fell to 2.68:1 (needs 3.0) and the teal-light mono gloss to 2.82:1
+(needs 4.5) — because a mid-teal scrim is no longer a dark surface, which is
+the only thing teal-light is specified for. At the shipped stops, worst case
+per-pixel across the full parallax excursion: white h2 10.44, gold `<em>`
+4.96, body 8.60, mono gloss 5.03, gold price 6.16 inside its panel.
+
 If this section ever needs more of the photograph visible, re-measure; do not
-solve it by changing the type colour (see invariant 3).
+solve it by lightening the stops or changing the type colour (invariant 3).
 
 ### Typography
 
@@ -268,10 +314,18 @@ deliberately cut — handwriting fights the cartographic register.
 - `.anim-parallax`/`alt-settle` in `app/globals.css` are unused. That's a
   current decision, not an oversight — leave them in place and don't flag or
   clean them up.
-- `public/images/footprints-1.jpg`, `footprints-3.jpeg`, `sum-icon.png` and
-  `sum-logo.png` are tracked and deliberately unreferenced — client-supplied,
-  committed in Sprint 7 to be backed up, and reserved for the Gallery section
-  in Phase 2. They are not dead assets; do not delete them.
+- `public/images/footprints-1.jpg` and `footprints-3.jpeg` are tracked and
+  deliberately unreferenced — client-supplied, committed in Sprint 7 to be
+  backed up, and reserved for the Gallery section in Phase 2. They are not
+  dead assets; do not delete them.
+- The brand assets moved out of `public/images/` in Sprint 6C:
+  `public/sum-logo.png` is the masthead logo, and `sum-icon.png` became
+  `app/icon.png` (plus a 180×180 `app/apple-icon.png` resized from the same
+  source) so the App Router emits the icon tags. `app/icon.png` is
+  byte-identical to the supplied artwork — it was moved, never redrawn or
+  simplified, and must not be.
+- `public/images/sumadv-icon.png` and `sumadv-logo.png` are the older, lower-
+  resolution supplied versions. Nothing references them since Sprint 6C.
 
 ## Verification before any commit
 
@@ -303,7 +357,14 @@ ticked off from a local build. Items waiting on the client are below.
   `footprints-3.jpeg`); footprints-2 is the Tsikoane section background as of
   Sprint 7. Still outstanding: plateau summit, bonfire, Basotho meal.
 - Mpho Noko portrait (initials placeholder in `Hlotse.tsx`)
-- Vector logo `.svg` plus a white variant for dark backgrounds
+- **Knockout / reversed logo variant — expected this week, and the footer is
+  waiting on it.** `public/sum-logo.png` is a teal mark with a dark-grey
+  wordmark on white: on `surface-dark` the grey tagline disappears and the
+  white ground shows as a hard rectangle. Until the variant arrives the footer
+  renders the wordmark "SUM ADVENTURES" in white display type and no mark, with
+  a TODO naming the asset. **Do not invert, recolour, filter or knock out the
+  existing PNG as a stand-in** — a recoloured brand mark is an invented asset.
+- Vector logo `.svg` (the masthead currently ships the raster PNG)
 - Confirmation that *minowane* is the customer-facing term
 - Tagline conflict: logo says "Travel is adventure having fun", profile and all
   flyers say "More Than Just A Trip". Site uses the latter.
@@ -313,25 +374,41 @@ ticked off from a local build. Items waiting on the client are below.
   scheduled flip in `docs/launch-checklist.md` — the answer decides whether
   that flip should happen at all.
 - When does the Afriski season close?
-- **Three colour values, blocking the repalette** (see below): the deep teal
-  that passes AA at 13px white text, the dark surface replacement for navy,
-  and whether gold survives as CTA fill.
 
-### Approved but never implemented
+### Landed in Sprint 6C — previously "approved but never implemented"
 
-Recorded here because "approved" has repeatedly been mistaken for "done" when
-reading these docs. Nothing in this list is in the repo. None of it is in
-scope for a sprint until it is picked up explicitly.
+All three items that sat in this section are now in the repo. Kept as a record
+because these were mistaken for done more than once while they were not.
 
-- **Logo / masthead recolour to navy / icy-blue.** Approved in Sprint 4.5.
-  **UNLANDED.** `components/site/Masthead.tsx` has never been touched for it
-  and still renders `/images/sumadv-icon.png` unmodified — the mark is still
-  the client's original teal. No icon asset has been recoloured.
-  `docs/client-profile.md` says the client "has approved a logo recolour";
-  that is the approval, not the work.
-- **Favicon.** **UNLANDED — the site ships no favicon at all.** There is no
-  `app/icon.*`, no `app/apple-icon.*`, no `public/favicon.ico`, no web
-  manifest, no `icons` key in the `metadata` export in `app/layout.tsx`, and
-  no `<link rel="icon">` anywhere. Browsers currently fall back to a default.
-- **Repalette.** **UNLANDED and blocked**, on the three colour values listed
-  under "From the client" above. Not startable without them.
+- **Palette.** ~~Blocked on three colour values.~~ **Supplied and landed.** The
+  deep teal that passes AA at 13px white text (`teal-deep #15665F`), the dark
+  surface replacing navy (`surface-dark #072B28`), and gold's role — it
+  survives, but on dark surfaces only, and **not** as the CTA fill, which is
+  `surface-dark`. Full token set and the contrast rules are in invariant 3.
+- **Logo / masthead.** ~~Recolour to navy / icy-blue, approved Sprint 4.5,
+  never touched.~~ **Superseded and landed.** That recolour never happened and
+  is now moot: the direction reversed, and the site takes its palette *from*
+  the client's teal mark rather than recolouring the mark to match the site.
+  `Masthead.tsx` was rebuilt around `public/sum-logo.png`.
+- **Favicon.** ~~The site shipped none.~~ **Landed.** `app/icon.png` (800×800,
+  the supplied artwork unmodified) and `app/apple-icon.png` (180×180, resized
+  from it). The App Router emits `<link rel="icon">` and
+  `<link rel="apple-touch-icon">`; verified served at `/icon.png` and
+  `/apple-icon.png`. There is still no `manifest.json` — nothing needs one yet.
+
+### Known gap — the altitude rail is one colour, not two
+
+The brief for Sprint 6C asked for the rail to render `surface-dark` over light
+sections and `teal-light` over dark ones. **It ships as a single `teal`
+instead**, and that is a deliberate limitation, not an oversight.
+
+The rail is one `position: fixed` element; sections scroll behind it. Nothing
+in CSS tells it which section it currently overlaps, so a two-state swap needs
+either a scroll listener (a client boundary — invariant 1) or a cross-fade rig
+driven by the per-section view timelines. Worse, each half of the literal spec
+fails on the opposite tone: `teal-deep` is 2.24 on `surface-dark`, and
+`teal-light` is 2.02 on `ice`. `teal` is the one value clearing 3:1 against
+both (3.41 on ice, 4.04 on surface-dark), so the rail is legible everywhere at
+the cost of not changing. The elevation chips carry their own opaque fills, so
+the digits were never at risk either way. Revisit only if the two-tone effect
+is wanted for its own sake.

@@ -115,10 +115,17 @@ have forced a client boundary around the whole page.
 **Tokens live in CSS.** Tailwind v4 is CSS-first; the `@theme` block in
 `app/globals.css` replaces `tailwind.config.js`.
 
-**Two orange values, deliberately.** `minowane` for large numerals and badges.
-`minowane-deep` for any fill behind small white text — the lighter orange
-measures about 3.5:1 against white and fails WCAG AA at 13px. The `Button`
-component only ever uses the deep value.
+**The palette is split by contrast.** Teal and gold are sampled from the
+client's logo; `teal-deep`, `teal-light`, `surface-dark` and `ice` are derived
+from those to meet contrast. `teal` is 3.75 on white — fine for a 40px numeral,
+fails AA at 13px, so small text uses `teal-deep` (6.78). **Gold is a
+dark-surface colour only**: 7.12 on `surface-dark` but 1.94 on the `ice` page
+background, so it fails even large-text contrast on a light surface. Text on a
+gold fill is `ink`, never white. Full rules in CLAUDE.md invariant 3.
+
+**Radius scale, nothing fully rounded.** 8px inputs and chips, 12px cards and
+nested controls, 16px standalone buttons and the navbar pill. No `rounded-full`
+anywhere.
 
 **Motion degrades to nothing.** The finished state is authored as the default;
 animation layers on inside `@supports (animation-timeline: scroll())`. Firefox
@@ -171,22 +178,33 @@ CLAUDE.md holds the authoritative list. In brief:
 - [ ] Tsikoane shot list — cave/footprint images supplied; plateau summit,
       bonfire and Basotho meal still outstanding
 - [ ] Mpho Noko portrait (initials placeholder in `Hlotse.tsx`)
-- [ ] Vector logo `.svg` plus a white variant for dark backgrounds
-- [ ] Three colour values needed before the repalette can start
+- [ ] **Knockout / reversed logo for dark backgrounds — the footer is waiting
+      on it.** Expected this week. Until it lands the footer shows the wordmark
+      in type with no mark; the existing PNG must not be inverted as a stand-in.
+- [ ] Vector logo `.svg` (the masthead ships the raster PNG today)
+- [x] Three colour values for the repalette — **supplied, Sprint 6C**
 - [ ] Confirm *minowane* is the term he uses with customers
 - [ ] Resolve the tagline conflict: the logo reads "Travel is adventure having
       fun", the profile and all flyers read "More Than Just A Trip". The site
       uses the latter.
 
-## Approved but not implemented
+## Landed in Sprint 6C
 
-Not in the repo, despite being agreed. See CLAUDE.md for detail.
+All three long-standing "approved but never implemented" items are now in the
+repo. See CLAUDE.md for detail.
 
-- Logo / masthead recolour to navy / icy-blue (approved Sprint 4.5) — the mark
-  is still teal and `Masthead.tsx` is untouched.
-- Favicon — the site ships none: no `app/icon.*`, no `favicon.ico`, no
-  manifest, no `icons` metadata, no icon link tags.
-- Repalette — blocked on the three colour values above.
+- **Palette** — teal/gold replaces navy/icy-blue/orange, with the contrast
+  splits documented as invariant 3.
+- **Logo / masthead** — the Sprint 4.5 recolour is moot; the direction
+  reversed, and the site now takes its palette from the client's teal mark
+  instead of recolouring the mark to match the site. The masthead is a sticky
+  floating white pill built around `public/sum-logo.png`.
+- **Favicon** — `app/icon.png` and `app/apple-icon.png`, emitted by the App
+  Router. No manifest yet; nothing needs one.
+
+Known gap: the altitude rail renders a single `teal` rather than switching
+tone per section. It is one fixed element and cannot know which section it
+overlaps without JS. Reasoning in CLAUDE.md.
 
 ## Roadmap
 

@@ -20,13 +20,13 @@ export default async function ContactPage({ searchParams }: Props) {
   const s = stations[4];
 
   return (
-    <section className="relative bg-snowline pb-26 pt-[140px]">
+    <section className="relative bg-ice pb-26 pt-[140px]">
       <div className="mx-auto max-w-[820px] px-7 lg:pl-[152px]">
         <Station elevation={s.elevation} place={s.place} tone="light" />
-        <h1 className="type-display mt-5 max-w-[20ch] text-[clamp(30px,4vw,46px)] text-senqu">
+        <h1 className="type-display mt-5 max-w-[20ch] text-[clamp(30px,4vw,46px)] text-surface-dark">
           Send an enquiry
         </h1>
-        <p className="mt-5 max-w-[54ch] text-[16.5px] text-[#33456B]">
+        <p className="mt-5 max-w-[54ch] text-[16.5px] text-[#2F3E3C]">
           Tell us what you have in mind and we&rsquo;ll get back to you. For a faster
           reply, WhatsApp usually beats email for this audience.
         </p>

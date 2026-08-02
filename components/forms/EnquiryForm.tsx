@@ -8,9 +8,9 @@ import { submitEnquiry, type EnquiryState } from "@/app/contact/actions";
 const initialState: EnquiryState = { status: "idle" };
 
 const fieldClass =
-  "mt-2 w-full border border-contour/30 bg-white px-4 py-3 text-[15px] text-senqu placeholder:text-[#8a9ab0] focus-visible:border-minowane";
-const labelClass = "block font-mono text-[11px] uppercase tracking-[0.14em] text-[#5B6C90]";
-const errorClass = "mt-1.5 text-[13px] text-minowane-deep";
+  "mt-2 w-full rounded-sm border border-teal-deep/30 bg-white px-4 py-3 text-[15px] text-surface-dark placeholder:text-[#8AA09C] focus-visible:border-teal-deep";
+const labelClass = "block font-mono text-[11px] uppercase tracking-[0.14em] text-[#586A67]";
+const errorClass = "mt-1.5 text-[13px] text-teal-deep";
 
 export function EnquiryForm({ defaultTourSlug }: { defaultTourSlug?: string }) {
   const [state, formAction, isPending] = useActionState(submitEnquiry, initialState);
@@ -18,9 +18,9 @@ export function EnquiryForm({ defaultTourSlug }: { defaultTourSlug?: string }) {
 
   if (state.status === "success") {
     return (
-      <div className="mt-10 border border-contour/20 bg-white p-8">
-        <p className="type-display text-xl text-senqu">Thanks — enquiry sent</p>
-        <p className="mt-3 text-[15px] text-[#33456B]">{state.message}</p>
+      <div className="mt-10 border border-teal-deep/20 bg-white rounded-md p-8">
+        <p className="type-display text-xl text-surface-dark">Thanks — enquiry sent</p>
+        <p className="mt-3 text-[15px] text-[#2F3E3C]">{state.message}</p>
       </div>
     );
   }
@@ -113,12 +113,12 @@ export function EnquiryForm({ defaultTourSlug }: { defaultTourSlug?: string }) {
       </div>
 
       {state.status === "error" && state.message && (
-        <p className="text-[14px] text-minowane-deep">{state.message}</p>
+        <p className="text-[14px] text-teal-deep">{state.message}</p>
       )}
 
       {state.status === "fallback" && (
-        <div className="border border-dashed border-minowane/50 p-5">
-          <p className="text-[14.5px] text-senqu">{state.message}</p>
+        <div className="border border-dashed border-teal-deep/50 p-5">
+          <p className="text-[14.5px] text-surface-dark">{state.message}</p>
           {state.whatsappHref && (
             <Button href={state.whatsappHref} external className="mt-4">
               Continue on WhatsApp
@@ -130,7 +130,7 @@ export function EnquiryForm({ defaultTourSlug }: { defaultTourSlug?: string }) {
       <button
         type="submit"
         disabled={isPending}
-        className="inline-flex items-center gap-2 rounded-sm bg-minowane-deep px-7 py-4 text-[13px] uppercase tracking-[0.1em] text-white transition-transform duration-200 ease-alt hover:-translate-y-0.5 hover:bg-minowane disabled:opacity-60 disabled:hover:translate-y-0 [font-variation-settings:'wdth'_100,'wght'_700]"
+        className="inline-flex items-center gap-2 rounded-lg bg-surface-dark px-7 py-4 text-[13px] uppercase tracking-[0.1em] text-white transition-transform duration-200 ease-alt hover:-translate-y-0.5 hover:bg-teal-deep disabled:opacity-60 disabled:hover:translate-y-0 [font-variation-settings:'wdth'_100,'wght'_700]"
       >
         {isPending ? "Sending…" : "Send enquiry"}
       </button>
