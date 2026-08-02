@@ -19,9 +19,11 @@ require breaking one, stop and ask.
 
 ### 1. No client components without justification
 
-There is currently **no `"use client"` anywhere** in this repo. Every component
-is a server component and all motion is CSS scroll-driven, so the animation
-bundle is 0 KB.
+There is exactly **one `"use client"` in this repo**: `components/forms/
+EnquiryForm.tsx`, landed in Sprint 4 and used only by `/contact`. That is the
+sanctioned exception described at the end of this invariant. Every other
+component is a server component and all motion is CSS scroll-driven, so the
+animation bundle is 0 KB.
 
 This is a cost decision, not purism. Mobile data in Lesotho runs around 2.5% of
 average monthly income and 4G coverage is ~86% against near-universal 3G. Bundle
@@ -76,23 +78,35 @@ must survive a customer fact-checking it.
 - Avoid unfalsifiable superlatives in copy ("higher than most countries on
   earth"). Prefer one checkable comparison.
 
-**Fenced exception — Tsikoane's provisional elevation.** Tsikoane's real
-elevation is still unconfirmed, but `data/stations.ts` carries
-`elevation: 2600, provisional: true` for it (Sprint 5) rather than `null`, so
-the altitude rail draws correctly during design work. This is a deliberate,
-temporary breach of the rule above, not a reversal of it:
+**Fenced exception — Tsikoane's provisional elevation. CLOSED in Sprint 7.**
+Tsikoane is confirmed at **1,881 m**, supplied by Mpho. `data/stations.ts`
+carries `elevation: 1881` with no `provisional` key, and the Tsikoane tour in
+`data/tours.ts` carries `elevation: 1881` rather than `null`. Nothing on the
+site renders "Elev. TBC" or a "prov." suffix for Tsikoane any more, and
+production builds are **no longer blocked** by this.
 
-- `provisional?: boolean` on `Station` — set on Tsikoane only, never on any
-  other station.
+The mechanism stays in place for the next figure that needs it, and the rules
+below govern any future use of it:
+
+- `provisional?: boolean` on `Station` — currently set on **no station**. It
+  is a fenced exception, not a general-purpose flag; do not set it without a
+  reason recorded here.
 - Every place a provisional elevation renders (rail tick, rail marker pill,
   section eyebrow via `Station.tsx`'s `provisional` prop) must show a dashed
   pill border and a "prov." suffix. It must never look like a confirmed value.
+  That rendering is still implemented and still correct — it is simply not
+  reached while no station is flagged.
 - Guarded in code, not just by convention: `data/stations.ts` throws at
   build/import time if any station is `provisional: true` while
   `VERCEL_ENV === "production"`, naming the offending station. This is
   deliberately a hard failure, not a warning — a warning is exactly what let
   a stray dummy elevation ("3798m") sit unnoticed on the rail marker for
   four sprints.
+- **The guard is a no-op today and that is its correct resting state.** It is
+  not dead code. Sprint 7 confirmed it both ways against a real
+  production-condition build: `VERCEL_ENV=production npm run build` exits 0 as
+  the data now stands, and exits 1 with the guard's own message when a station
+  is flagged. Do not delete it because it currently passes.
 - **The guard keys on `VERCEL_ENV`, not `NEXT_PUBLIC_SITE_URL`. Do not
   change it back.** Sprint 5 keyed it on "`NEXT_PUBLIC_SITE_URL` is not
   localhost", which sounds equivalent and is not: every preview deploy has a
@@ -103,14 +117,17 @@ temporary breach of the rule above, not a reversal of it:
   environment is building. `VERCEL_ENV` is the only signal that distinguishes
   production from preview. Preview and local builds must keep rendering the
   provisional value — blocking them is the bug, not the feature.
-- Consequence, and it is intended: **production builds fail while Tsikoane is
-  provisional.** Production is meant to be blocked until the client supplies
-  the real figure. If a production deploy is failing on this error, the fix is
-  the client's number — not loosening the guard.
-- When the client supplies the real figure, the only change should be the
-  number and deleting the `provisional` flag. Do not quietly promote 2,600 m
-  to a confirmed value, and do not strip the flag without an actual
-  client-supplied figure.
+- Consequence, and it is intended: **production builds fail while any station
+  is provisional.** Production is meant to be blocked until the client
+  supplies the real figure. If a production deploy is failing on this error,
+  the fix is the client's number — not loosening the guard. This blocked
+  production from Sprint 5 to Sprint 7 and is no longer in effect.
+- When a real figure arrives, the only change should be the number and
+  deleting the `provisional` flag — which is exactly how Sprint 7 closed
+  this one. Never promote a provisional number to confirmed by deleting the
+  flag alone, and never strip the flag without an actual client-supplied
+  figure. The 2,600 m that stood here was not the answer; 1,881 m came from
+  the client.
 
 ### 6. Do not fabricate content
 
@@ -206,9 +223,22 @@ collapses to `ScrollProgress` plus the per-section altitude chips.
 **The Tsikoane inversion.** The dinosaur footprints — *minowane* in Sesotho —
 are pressed into the **ceiling** of the Menoaneng caves. That section is the
 only place the parallax reverses, so the overhang reads as receding above you.
-The prints are vector because no plateau photography exists. Preserve the
-`z-10` on the ceiling element — without it the overhang layer paints over the
-prints and the signature moment disappears.
+Preserve the `z-10` on the ceiling element — without it the overhang layer
+paints over the prints and the signature moment disappears.
+
+The ceiling prints are **vector, and stay vector**. That was originally
+because no plateau photography existed; as of Sprint 7 some does, and the
+decision held anyway. `public/images/footprints-2.jpeg` — client-supplied,
+real minowane — is now the section background, riding inside `.anim-overhang`
+so it carries the inversion, with the section's existing gradient over it as
+a scrim. Photograph behind the copy, drawing on the ceiling: both, not either.
+
+The scrim opacity is **0.94 and is set by measured contrast, not by taste.**
+The orange `<em>` in that h2 is the binding constraint — it measures 3.16:1
+(desktop) / 3.20:1 (mobile) against the worst pixel the parallax can bring
+behind it, against the 3.0 WCAG AA wants for large text. It fails at 0.90.
+If this section ever needs more of the photograph visible, re-measure; do not
+solve it by changing the type colour (see invariant 3).
 
 ### Typography
 
@@ -263,20 +293,15 @@ ticked off from a local build. Items waiting on the client are below.
 
 ### From the client
 
-- **Tsikoane confirmed elevation.** Currently `elevation: 2600,
-  provisional: true` in `data/stations.ts` (the fenced exception in invariant
-  5), and `elevation: null` on the Tsikoane tour in `data/tours.ts`.
-  **This one figure is the single blocker on three separate items:**
-  1. production `robots.txt` verification (`docs/launch-checklist.md`)
-  2. `X-Robots-Tag` absence-in-production verification (same file)
-  3. past-tour production rendering — verified locally on 1 August 2026,
-     never in production (`docs/sprint-6c.md`)
-
-  Three items, one dependency: the provisional guard fails every
-  `VERCEL_ENV=production` build while the flag is set, so none of the three
-  can be observed on a real deploy until the client supplies the number.
+- ~~**Tsikoane confirmed elevation.**~~ **Supplied — 1,881 m, Sprint 7.** No
+  longer a blocker on anything. It was previously the single dependency for
+  three launch-checklist items; those items are still unverified, but they are
+  now blocked solely on a connected deployment. See `docs/launch-checklist.md`.
 - Names of five summit passes
-- Tsikoane photography: plateau summit, cave ceiling, bonfire, Basotho meal
+- Tsikoane photography — **partly supplied.** Three cave/footprint images
+  arrived and are committed (`footprints-1.jpg`, `footprints-2.jpeg`,
+  `footprints-3.jpeg`); footprints-2 is the Tsikoane section background as of
+  Sprint 7. Still outstanding: plateau summit, bonfire, Basotho meal.
 - Mpho Noko portrait (initials placeholder in `Hlotse.tsx`)
 - Vector logo `.svg` plus a white variant for dark backgrounds
 - Confirmation that *minowane* is the customer-facing term
@@ -288,3 +313,25 @@ ticked off from a local build. Items waiting on the client are below.
   scheduled flip in `docs/launch-checklist.md` — the answer decides whether
   that flip should happen at all.
 - When does the Afriski season close?
+- **Three colour values, blocking the repalette** (see below): the deep teal
+  that passes AA at 13px white text, the dark surface replacement for navy,
+  and whether gold survives as CTA fill.
+
+### Approved but never implemented
+
+Recorded here because "approved" has repeatedly been mistaken for "done" when
+reading these docs. Nothing in this list is in the repo. None of it is in
+scope for a sprint until it is picked up explicitly.
+
+- **Logo / masthead recolour to navy / icy-blue.** Approved in Sprint 4.5.
+  **UNLANDED.** `components/site/Masthead.tsx` has never been touched for it
+  and still renders `/images/sumadv-icon.png` unmodified — the mark is still
+  the client's original teal. No icon asset has been recoloured.
+  `docs/client-profile.md` says the client "has approved a logo recolour";
+  that is the approval, not the work.
+- **Favicon.** **UNLANDED — the site ships no favicon at all.** There is no
+  `app/icon.*`, no `app/apple-icon.*`, no `public/favicon.ico`, no web
+  manifest, no `icons` key in the `metadata` export in `app/layout.tsx`, and
+  no `<link rel="icon">` anywhere. Browsers currently fall back to a default.
+- **Repalette.** **UNLANDED and blocked**, on the three colour values listed
+  under "From the client" above. Not startable without them.

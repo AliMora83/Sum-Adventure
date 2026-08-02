@@ -109,7 +109,10 @@ Includes: guided hiking · dinosaur footprints tour · San rock art tour ·
 horse riding · yoga & meditation · sound therapy · traditional Basotho meals ·
 bonfire experience · sunrise & sunset photography · team building activities
 
-Plateau elevation: **[UNCONFIRMED]** — renders as `Elev. TBC`
+Plateau elevation: **1,881 m — CONFIRMED by Mpho, Sprint 7.** Supersedes the
+provisional 2,600 m that stood in `data/stations.ts` from Sprint 5. It renders
+as a normal confirmed elevation everywhere; nothing shows `Elev. TBC` or a
+"prov." suffix for Tsikoane any more.
 Summit pass names: 1 of 6 confirmed (Linareng Pass). Five **[UNCONFIRMED]**.
 
 ### Sum Ultimate Afriski Experience
@@ -201,8 +204,17 @@ Longer first-person bio requested from client, not yet supplied.
 Sky blue · yellow/orange · black · white
 
 **Superseded.** The site uses the approved navy / icy-blue / orange system in
-`app/globals.css`. Client has approved a logo recolour to match. Do not
-reintroduce the stated palette.
+`app/globals.css`. Do not reintroduce the stated palette.
+
+The client approved a **logo recolour** to match, in Sprint 4.5. That approval
+has **never been implemented** — `components/site/Masthead.tsx` still renders
+the supplied `sumadv-icon.png` unmodified and the mark is still teal. Approval
+is not landing; do not read this paragraph as a record of completed work.
+
+A wider **repalette** is also approved in principle and **not started**. It is
+blocked on three values from Ali, none of which have been supplied: the deep
+teal that passes AA at 13px white text, the dark surface replacement for navy,
+and whether gold survives as CTA fill.
 
 ## Not supplied — do not fabricate
 
