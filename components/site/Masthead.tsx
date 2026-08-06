@@ -59,14 +59,31 @@ export function Masthead() {
     <header className="fixed inset-x-0 top-3 z-[60] sm:top-4">
       <div className="mx-auto w-full max-w-[1180px] px-3 sm:px-5 lg:w-[70vw] lg:max-w-none lg:px-0">
         <div className="flex h-[58px] items-center justify-between gap-4 rounded-lg border border-[rgba(7,43,40,0.08)] bg-white pl-4 pr-3 shadow-[0_4px_24px_rgba(7,43,40,0.10)] md:h-[68px] md:pl-6 md:pr-4">
+          {/*
+            ==== NAV LOGO SIZE — TUNE HERE ====
+            `w-[96px] md:w-[130px]` is the only thing to change. Height is
+            derived (h-auto), so the aspect ratio cannot be distorted by
+            editing one number.
+
+            There is a ceiling, and it is close. The asset is trimmed to its
+            artwork, aspect 2.064, and the pill height is fixed at 58px /
+            68px. At the current 130px the logo renders 63px tall inside the
+            68px pill — 2.5px of clearance top and bottom. Going much past
+            130px means growing the pill, which Sprint 6i explicitly ruled
+            out. Mobile is held at 96px (46.5px tall in the 58px pill).
+
+            Source is the trimmed AVIF in public/brand/, not the raw PNG:
+            the original carried 33px of transparent padding down one side,
+            which is why the old 85px render looked smaller than its box.
+          */}
           <Link href="/" className="flex shrink-0 items-center" aria-label="Sum Adventures — home">
             <Image
-              src="/sum-logo.png"
+              src="/brand/sum-logo.avif"
               alt="Sum Adventures"
-              width={793}
-              height={412}
+              width={260}
+              height={126}
               priority
-              className="h-8 w-auto md:h-11"
+              className="h-auto w-[96px] md:w-[130px]"
             />
           </Link>
 
