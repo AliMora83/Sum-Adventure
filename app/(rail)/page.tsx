@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AltitudeRail } from "@/components/site/AltitudeRail";
 import { Hero } from "@/components/sections/Hero";
 import { Hlotse } from "@/components/sections/Hlotse";
 import { Tsikoane } from "@/components/sections/Tsikoane";
@@ -27,10 +28,17 @@ export const metadata: Metadata = {
 /**
  * Section order is determined by real elevation, ascending — not by
  * marketing convention. See data/stations.ts.
+ *
+ * The rail is mounted HERE rather than in a shared layout, and that is the
+ * whole point: it is the homepage's elevation spine, and every station it
+ * plots (hero, hlotse, tsikoane, tours, footer) is a section of this page.
+ * On About or Tours it plotted a journey those pages don't take. It is
+ * `position: fixed`, so mounting it inside the page tree costs it nothing.
  */
 export default function Home() {
   return (
     <>
+      <AltitudeRail />
       <Hero />
       <Hlotse />
       <Tsikoane />

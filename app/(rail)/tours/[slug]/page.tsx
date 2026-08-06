@@ -55,7 +55,7 @@ export default async function TourDetailPage({ params }: Props) {
         <Contours depth="far" />
         <div className="absolute inset-0 bg-gradient-to-b from-surface-dark/60 via-surface-dark/30 to-surface-dark/95" />
 
-        <div className="relative z-10 mx-auto w-full max-w-[1180px] px-7 pb-16 pt-36 lg:pl-[152px]">
+        <div className="relative z-10 mx-auto w-full max-w-[1180px] px-7 pb-16 pt-36">
           <Link
             href="/tours"
             className="block font-mono text-xs uppercase tracking-[0.14em] text-teal-light hover:text-gold"
@@ -76,7 +76,7 @@ export default async function TourDetailPage({ params }: Props) {
       </section>
 
       <section className="relative bg-ice py-26">
-        <div className="mx-auto max-w-[1180px] px-7 lg:pl-[152px]">
+        <div className="mx-auto max-w-[1180px] px-7">
           <div className="grid gap-12 md:grid-cols-[1.1fr_0.9fr]">
             <div>
               <h2 className="type-display text-2xl text-surface-dark">What&rsquo;s included</h2>

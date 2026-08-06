@@ -1,12 +1,9 @@
 import Image from "next/image";
-import { Station } from "@/components/ui/Station";
 import { Contours } from "@/components/ui/Contours";
 import { Button } from "@/components/ui/Button";
-import { stations } from "@/data/stations";
 import { generalEnquiryLink } from "@/lib/whatsapp";
 
 export function Hero() {
-  const s = stations[0];
   return (
     <section id="hero" className="relative flex min-h-svh items-end overflow-hidden bg-surface-dark text-white">
       <div className="anim-hero-media absolute inset-0 origin-[center_40%] bg-gradient-to-b from-[#2A8F84] via-teal-deep to-surface-dark">
@@ -37,8 +34,13 @@ export function Hero() {
       />
 
       <div className="relative z-10 mx-auto w-full max-w-[1180px] px-7 pb-24 pt-36 lg:pl-[152px]">
-        <Station elevation={s.elevation} place={s.place} />
-        <h1 className="type-display mt-4 text-[clamp(44px,8.4vw,104px)] [text-shadow:0_2px_30px_rgba(10,27,61,0.45)]">
+        {/* No altitude chip here. The hero's own "1,400 m — lowest point in
+            Lesotho" line ran horizontally across the snow photograph and was
+            illegible against it; the same fact is stated in full in the mono
+            footnote below the buttons, and the rail carries the figure. Every
+            other section keeps its <Station> chip — this is the one place the
+            background makes it unreadable. */}
+        <h1 className="type-display text-[clamp(44px,8.4vw,104px)] [text-shadow:0_2px_30px_rgba(10,27,61,0.45)]">
           More than
           <br />
           <em className="not-italic text-teal-light">just a</em> trip

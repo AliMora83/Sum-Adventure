@@ -31,18 +31,26 @@ const nav = [
  * edge from the first frame and overlay the hero. `fixed` gives exactly the
  * described behaviour; both are equally zero-JS.
  *
- * WIDTH — derived from the rail, never hardcoded. The altitude rail is
- * `fixed left-0 w-rail` and appears at lg. Its label pills overhang the
- * 132px track slightly, so the content column is inset by rail + 20px, and
- * this pill takes the identical inset. That puts the pill's left edge exactly
- * on the content column's left edge and guarantees the rail passes OUTSIDE it
- * at every width — below lg the rail isn't rendered at all, so the pill falls
- * back to the plain page gutter. Change `--spacing-rail` and this follows it.
+ * WIDTH — 70vw at lg and up, centred in the VIEWPORT. Deliberately measured
+ * against the screen and nothing else: not the 1180px content column, not the
+ * hero copy block's gutter, not `--spacing-rail`. The pill's left edge does
+ * not line up with the headline, and it is not inset to clear the altitude
+ * rail — the rail is `fixed left-0 w-rail` and simply passes underneath the
+ * pill's left end. That overlap is accepted, and it is why neither element
+ * offsets for the other: the rail's position is a function of the left screen
+ * edge, the pill's of the screen centre, and they are independent by design.
+ *
+ * This replaces an earlier rail-derived inset (`pl-[calc(var(--spacing-rail)
+ * + 20px)]`, matching the content column exactly). Don't reinstate it —
+ * floating the pill free of the content grid is the point.
+ *
+ * Below lg the previous behaviour is unchanged: the rail isn't rendered at
+ * all there, and the pill stays near-full width inside the plain page gutter.
  */
 export function Masthead() {
   return (
     <header className="fixed inset-x-0 top-3 z-[60] sm:top-4">
-      <div className="mx-auto max-w-[1180px] px-3 sm:px-5 lg:pl-[calc(var(--spacing-rail)+20px)] lg:pr-5">
+      <div className="mx-auto w-full max-w-[1180px] px-3 sm:px-5 lg:w-[70vw] lg:max-w-none lg:px-0">
         <div className="flex h-[58px] items-center justify-between gap-4 rounded-lg border border-[rgba(7,43,40,0.08)] bg-white pl-4 pr-3 shadow-[0_4px_24px_rgba(7,43,40,0.10)] md:h-[68px] md:pl-6 md:pr-4">
           <Link href="/" className="flex shrink-0 items-center" aria-label="Sum Adventures — home">
             <Image

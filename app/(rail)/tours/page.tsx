@@ -26,7 +26,7 @@ export default function ToursIndexPage() {
 
   return (
     <section className="relative bg-ice pb-26 pt-[140px]">
-      <div className="mx-auto max-w-[1180px] px-7 lg:pl-[152px]">
+      <div className="mx-auto max-w-[1180px] px-7">
         <Station elevation={s.elevation} place={s.place} tone="light" />
         <h1 className="type-display mt-5 max-w-[24ch] text-[clamp(30px,4vw,46px)] text-surface-dark">
           Tours &amp; packages
