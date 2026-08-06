@@ -1,11 +1,18 @@
 import Link from "next/link";
 import Image from "next/image";
 
+/**
+ * No Contact entry. The Enquire button beside this row already routes to
+ * /contact, and two links to the same page in one pill is redundant. The
+ * button is now the only masthead route to that page — if it is ever
+ * restyled into something that opens WhatsApp or an external URL instead,
+ * put Contact back here first.
+ */
 const nav = [
+  { href: "/", label: "Home" },
   { href: "/about", label: "About" },
   { href: "/#tsikoane", label: "Tsikoane" },
   { href: "/tours", label: "Tours" },
-  { href: "/contact", label: "Contact" },
 ];
 
 /**
