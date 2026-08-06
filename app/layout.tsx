@@ -83,9 +83,16 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: organizationJsonLdString() }}
         />
+        {/* First focusable element on every page, before the masthead, so a
+            keyboard user's very first Tab offers it. */}
+        <a href="#main" className="skip-link">
+          Skip to content
+        </a>
         <Masthead />
         <ScrollProgress />
-        <main>{children}</main>
+        <main id="main" tabIndex={-1}>
+          {children}
+        </main>
         <Footer />
         <MobileBar />
       </body>

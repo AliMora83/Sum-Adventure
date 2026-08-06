@@ -105,6 +105,36 @@
     transform: none;
   }
 
+  /* Skip-to-content link. Pure CSS and no JavaScript: the browser's own
+     fragment navigation does the work. It is positioned off-screen rather
+     than display:none or visibility:hidden, both of which would remove it
+     from the tab order and defeat the point — this is the same technique the
+     enquiry form's honeypot uses in the opposite direction.
+
+     <main> carries tabindex="-1" so focus actually lands in the content.
+     Without it the browser scrolls to the target but leaves focus on the
+     link, and the next Tab drops the user back into the masthead.
+
+     White on surface-dark is 15.16:1. */
+  .skip-link {
+    position: fixed;
+    left: -9999px;
+    top: 0;
+    z-index: 100;
+    border-radius: var(--radius-md);
+    background: var(--color-surface-dark);
+    color: #fff;
+    padding: 0.8rem 1.25rem;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .skip-link:focus-visible {
+    left: 12px;
+    top: 12px;
+  }
+
   /* Rail elevation pills (marker + ticks). Hidden by default — Firefox
      stable, with no scroll-timeline support, keeps a correct static page:
      the plain tick labels alone already carry the elevation spine without
