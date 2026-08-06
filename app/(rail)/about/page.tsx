@@ -1,6 +1,4 @@
 import type { Metadata } from "next";
-import { Station } from "@/components/ui/Station";
-import { stations } from "@/data/stations";
 import { buildMetadata } from "@/lib/site";
 
 export const metadata: Metadata = buildMetadata({
@@ -31,12 +29,13 @@ const serviceLines = [
 ];
 
 export default function AboutPage() {
-  const s = stations[1];
   return (
     <section className="relative bg-ice pb-26 pt-[140px]">
       <div className="mx-auto max-w-[1180px] px-7">
-        <Station elevation={s.elevation} place={s.place} tone="light" />
-        <h1 className="type-display mt-5 max-w-[20ch] text-[clamp(30px,4vw,46px)] text-surface-dark">
+        {/* No elevation eyebrow. The motif is the homepage's alone — see
+            (rail)/page.tsx. The heading leads, and carries no top margin
+            because it is the first element in the block. */}
+        <h1 className="type-display max-w-[20ch] text-[clamp(30px,4vw,46px)] text-surface-dark">
           About Sum Adventures
         </h1>
         <p className="mt-5 max-w-[52ch] text-[16.5px] italic text-[#2F3E3C]">

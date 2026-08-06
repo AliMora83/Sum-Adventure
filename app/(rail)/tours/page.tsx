@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { Station } from "@/components/ui/Station";
 import { TourBadge } from "@/components/ui/TourBadge";
-import { stations, formatElevation } from "@/data/stations";
+import { formatElevation } from "@/data/stations";
 import { tours, formatPrice, isPastTour } from "@/data/tours";
 import { tourEnquiryLink } from "@/lib/whatsapp";
 import { buildMetadata } from "@/lib/site";
@@ -20,15 +19,16 @@ export const metadata: Metadata = buildMetadata({
 });
 
 export default function ToursIndexPage() {
-  const s = stations[3];
   const liveTours = tours.filter((t) => !isPastTour(t));
   const pastTours = tours.filter((t) => isPastTour(t));
 
   return (
     <section className="relative bg-ice pb-26 pt-[140px]">
       <div className="mx-auto max-w-[1180px] px-7">
-        <Station elevation={s.elevation} place={s.place} tone="light" />
-        <h1 className="type-display mt-5 max-w-[24ch] text-[clamp(30px,4vw,46px)] text-surface-dark">
+        {/* No elevation eyebrow. The motif is the homepage's alone — see
+            (rail)/page.tsx. The heading leads, and carries no top margin
+            because it is the first element in the block. */}
+        <h1 className="type-display max-w-[24ch] text-[clamp(30px,4vw,46px)] text-surface-dark">
           Tours &amp; packages
         </h1>
         <p className="mt-5 max-w-[54ch] text-[16.5px] text-[#2F3E3C]">

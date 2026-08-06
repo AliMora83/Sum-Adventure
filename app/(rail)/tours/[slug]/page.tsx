@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Station } from "@/components/ui/Station";
 import { Contours } from "@/components/ui/Contours";
 import { Button } from "@/components/ui/Button";
 import { TourBadge } from "@/components/ui/TourBadge";
@@ -65,12 +64,10 @@ export default async function TourDetailPage({ params }: Props) {
 
           <TourBadge tour={tour} className="mt-5 inline-block" />
 
-          <Station
-            elevation={tour.elevation}
-            place={tour.place}
-            className={tour.flagship || isPastTour(tour) ? "mt-4" : "mt-6"}
-          />
-          <h1 className="type-display mt-4 text-[clamp(34px,6vw,64px)]">{tour.name}</h1>
+          {/* No elevation eyebrow. The motif is the homepage's alone — see
+              (rail)/page.tsx. The badge above still sets the heading's offset,
+              so this block keeps its own top spacing. */}
+          <h1 className="type-display mt-5 text-[clamp(34px,6vw,64px)]">{tour.name}</h1>
           <p className="mt-5 max-w-[52ch] text-[16.5px] text-[#DCEDEA]">{tour.blurb}</p>
         </div>
       </section>
