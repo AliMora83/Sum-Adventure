@@ -7,8 +7,17 @@ import { submitEnquiry, type EnquiryState } from "@/app/contact/actions";
 
 const initialState: EnquiryState = { status: "idle" };
 
+/**
+ * text-base (16px), not 15px: iOS Safari zooms the viewport when a focused
+ * input's font-size is below 16px, and it does not zoom back out. That is a
+ * one-pixel change with a disproportionate mobile cost.
+ *
+ * The placeholder is #5F7671, not #8AA09C. The old value measured 2.77:1 on
+ * white and failed AA outright; this one is 4.86:1. Placeholder text is real
+ * text and is held to the 4.5:1 threshold like any other.
+ */
 const fieldClass =
-  "mt-2 w-full rounded-sm border border-teal-deep/30 bg-white px-4 py-3 text-[15px] text-surface-dark placeholder:text-[#8AA09C] focus-visible:border-teal-deep";
+  "mt-2 w-full rounded-sm border border-teal-deep/30 bg-white px-4 py-3 text-base text-surface-dark placeholder:text-[#5F7671] focus-visible:border-teal-deep";
 const labelClass = "block font-mono text-[11px] uppercase tracking-[0.14em] text-[#586A67]";
 const errorClass = "mt-1.5 text-[13px] text-teal-deep";
 

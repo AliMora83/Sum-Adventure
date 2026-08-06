@@ -20,7 +20,14 @@ export function Hero() {
       <Contours depth="far" />
       <Contours depth="near" />
 
-      <div className="absolute inset-0 bg-gradient-to-b from-surface-dark/60 via-surface-dark/30 to-surface-dark/95" />
+      {/* Scrim. The `via` stop is 55%, raised from 30% in Sprint 6i.
+          At 30% the white headline measured 2.43:1 against the brightest
+          area of the hero photograph — it passed only because this
+          particular photo's bright region falls away from where the
+          headline actually sits. Client photography is still pending, and a
+          swap could have broken it silently. 55% makes the headline legible
+          against the worst pixel in the frame rather than the lucky one. */}
+      <div className="absolute inset-0 bg-gradient-to-b from-surface-dark/60 via-surface-dark/55 to-surface-dark/95" />
 
       {/* Masthead scrim. The pill is opaque white with a hairline border, and
           the hero is a bright snow photograph — on the lightest frames the
