@@ -1,3 +1,5 @@
+import { assertNoProvisional } from "@/lib/provisional";
+
 /**
  * The altitude spine. Section order on the homepage is determined by real
  * elevation, ascending. Every number here must survive a customer
@@ -38,15 +40,15 @@ export const stations: Station[] = [
 /**
  * Build guard for the provisional exception above.
  *
- * As of Sprint 7 no station is flagged, so this loop is a no-op and
+ * As of Sprint 7 no station is flagged, so `offenders` is empty and
  * production builds pass. That is the correct resting state — the guard is
  * not dead code awaiting deletion, it is the mechanism that makes the
  * exception safe to use again. Leave it in place.
  *
  * A provisional elevation exists so the rail draws correctly during design
  * work, and it is *meant* to be visible on localhost and on preview deploys
- * — reviewing it there is the entire point of carrying it. It must never
- * reach production.
+ * — reviewing it there is the entire point of carrying it. Hence scope
+ * "production": preview must keep rendering it, visibly unconfirmed.
  *
  * Keyed on VERCEL_ENV, not on NEXT_PUBLIC_SITE_URL. The original check fired
  * whenever the site URL was non-localhost, which is true of every preview
@@ -56,24 +58,23 @@ export const stations: Station[] = [
  * environment is building; VERCEL_ENV is the signal that separates a
  * production deploy from a preview one.
  *
- * Still a hard failure, not a warning — a warning is exactly what let a stray
- * dummy value ("3798m") sit unnoticed on the rail marker for four sprints.
- * This throws at build/import time, which aborts `next build`.
+ * The throwing mechanism itself now lives in lib/provisional.ts, shared with
+ * the JSON-LD guard in data/organization.ts. Behaviour here is unchanged.
  */
-if (process.env.VERCEL_ENV === "production") {
-  for (const s of stations) {
-    if (s.provisional) {
-      throw new Error(
-        `data/stations.ts: station "${s.id}" (${s.place}) has a provisional ` +
-          `elevation (${s.elevation} m) and VERCEL_ENV is "production". ` +
-          `Provisional data must never ship to production — get the real ` +
-          `figure from the client and delete the \`provisional\` flag. ` +
-          `Preview and local builds are unaffected and will keep rendering ` +
-          `it as visibly unconfirmed.`
-      );
-    }
-  }
-}
+assertNoProvisional({
+  source: "data/stations.ts",
+  scope: "production",
+  offenders: stations
+    .filter((s) => s.provisional)
+    .map(
+      (s) =>
+        `station "${s.id}" (${s.place}) — provisional elevation ${s.elevation} m`
+    ),
+  remedy:
+    `Get the real figure from the client and delete the \`provisional\` ` +
+    `flag. Preview and local builds are unaffected and will keep rendering ` +
+    `it as visibly unconfirmed.`,
+});
 
 export const railPath = stations
   .map((s, i) => `${i === 0 ? "M" : "L"}${s.railX} ${s.railY}`)

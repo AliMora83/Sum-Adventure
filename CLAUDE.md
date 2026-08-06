@@ -32,6 +32,13 @@ size is an affordability question for the actual audience.
 The enquiry form is the one place a client boundary is justified, and it must be
 scoped to the form component alone — never the page, never a layout.
 
+The `<script type="application/ld+json">` block in `app/layout.tsx` is **not a
+violation of this invariant** and must not be reported as one. The browser does
+not parse or execute `ld+json` as script: it is an inert data block that ships
+no runtime, creates no client boundary and hydrates nothing. `<script>` is
+simply the only element schema.org permits for it. The invariant is about
+shipped JavaScript, and this ships none.
+
 **Do not install** `framer-motion`, `motion`, `gsap`, `lenis`,
 `locomotive-scroll`, `react-spring`, or any scroll/animation library. A
 smooth-scroll library was evaluated and rejected: it lerps a fake scroll

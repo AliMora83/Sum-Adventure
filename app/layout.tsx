@@ -14,6 +14,7 @@ import {
   defaultOgImage,
   ogLocale,
 } from "@/lib/site";
+import { organizationJsonLdString } from "@/data/organization";
 import "./globals.css";
 
 /**
@@ -63,6 +64,25 @@ export default function RootLayout({
   return (
     <html lang="en-ZA" className={`${archivo.variable} ${plexMono.variable}`}>
       <body>
+        {/*
+          JSON-LD organisation markup.
+
+          NOT A ZERO-JS VIOLATION, and must not be flagged as one in a future
+          session. `type="application/ld+json"` is inert: the browser does not
+          parse or execute it as script, it ships no runtime, adds no client
+          boundary, and hydrates nothing. It is a data block that happens to
+          use the <script> element, which is the only element the schema.org
+          spec allows for it. The invariant is about shipped JavaScript, and
+          this ships none.
+
+          Values and the build guard live in data/organization.ts. Several
+          fields are still placeholders awaiting the client, and that guard is
+          what stops them reaching a deployed environment.
+        */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: organizationJsonLdString() }}
+        />
         <Masthead />
         <ScrollProgress />
         <main>{children}</main>
