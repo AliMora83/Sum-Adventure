@@ -321,9 +321,17 @@ deliberately cut — handwriting fights the cartographic register.
 - The brand assets moved out of `public/images/` in Sprint 6C:
   `public/sum-logo.png` is the masthead logo, and `sum-icon.png` became
   `app/icon.png` (plus a 180×180 `app/apple-icon.png` resized from the same
-  source) so the App Router emits the icon tags. `app/icon.png` is
-  byte-identical to the supplied artwork — it was moved, never redrawn or
-  simplified, and must not be.
+  source) so the App Router emits the icon tags.
+- `app/icon.png` was 800×800 (41 KB) until Sprint 6F — Next serves these
+  files as-is and never resizes them, so a favicon slot was being paid for
+  at full artwork resolution. It is now 32×32 (3.7 KB); `app/apple-icon.png`
+  was already correct at 180×180 and was untouched. The resize was a pure
+  downscale with alpha preserved: nothing was cropped, recoloured or
+  redrawn, and it still must not be. `app/icon.png` is therefore no longer
+  byte-identical to the supplied artwork — the untouched masters live at
+  `public/brand/icon-source.png` (800×800) and
+  `public/brand/apple-icon-source.png`. Re-cut from those, never from the
+  32px file, and do not delete them.
 - `public/images/sumadv-icon.png` and `sumadv-logo.png` are the older, lower-
   resolution supplied versions. Nothing references them since Sprint 6C.
 
