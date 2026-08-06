@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { PHONE_DISPLAY, EMAIL } from "@/lib/whatsapp";
 import { stations, formatElevation } from "@/data/stations";
 
@@ -10,19 +11,29 @@ export function Footer() {
         <div className="grid gap-9 md:grid-cols-4">
           <div className="md:col-span-2">
             {/*
-              TODO: replace with the knockout/reversed logo variant of
-              public/sum-logo.png once the client supplies it (expected this
-              week). Until then this is the wordmark in display type and no
-              mark at all.
+              The reversed logo variant the previous TODO was waiting on.
+              Client-supplied, transparent background — verified: all four
+              corners are alpha 0, so it sits on surface-dark directly with
+              no white plate.
 
-              sum-logo.png is a teal pin with a dark-grey wordmark sitting on
-              white. On surface-dark the grey tagline disappears entirely and
-              the white background would show as a hard rectangle. It is not
-              usable here. Do NOT invert, recolour, filter or knock out the
-              existing PNG as a stand-in — a recoloured brand mark is an
-              invented asset, and the real one is days away.
+              Legibility on #072b28, measured rather than assumed: the gold
+              wordmark is 6.72:1 and the grey tagline 9.83:1. The teal — the
+              pin body and "Adventures" — is the dimmest element at 3.12:1.
+              That still clears the 3:1 graphical-object threshold, and
+              logotypes are exempt from contrast requirements under 1.4.11
+              anyway. Nothing disappears.
+
+              ==== FOOTER LOGO SIZE — TUNE HERE ====
+              `w-[200px]`. Height derives from it. The asset is trimmed and
+              served at 2x (400px) for retina.
             */}
-            <p className="type-display text-2xl text-white">Sum Adventures</p>
+            <Image
+              src="/brand/sum-logo-dark.avif"
+              alt="Sum Adventures"
+              width={400}
+              height={196}
+              className="h-auto w-[200px]"
+            />
             <p className="mt-3 font-mono text-xs tracking-[0.1em]">
               Tourism · Photography · Events
               <br />
@@ -33,11 +44,20 @@ export function Footer() {
             <h2 className="mb-3.5 font-mono text-[11px] uppercase tracking-[0.16em] text-white">
               Explore
             </h2>
+            {/*
+              `inline-block py-1 -my-1` on each link is a hit-area fix, not a
+              layout change. The anchors were 16px tall, under the 24px
+              minimum in WCAG 2.2 SC 2.5.8. The padding grows the target to
+              24px; the equal negative margin pulls the extra height back out
+              of the flow, so the rendered spacing between links is
+              byte-identical to before. Type size, colour and rhythm are
+              untouched — only the clickable box grew.
+            */}
             <ul className="space-y-2 text-sm">
-              <li><Link href="/tours" className="hover:text-gold">Tours &amp; packages</Link></li>
-              <li><Link href="/#tsikoane" className="hover:text-gold">Tsikoane experience</Link></li>
-              <li><Link href="/about" className="hover:text-gold">About</Link></li>
-              <li><Link href="/contact" className="hover:text-gold">Enquire</Link></li>
+              <li><Link href="/tours" className="inline-block py-1 -my-1 hover:text-gold">Tours &amp; packages</Link></li>
+              <li><Link href="/#tsikoane" className="inline-block py-1 -my-1 hover:text-gold">Tsikoane experience</Link></li>
+              <li><Link href="/about" className="inline-block py-1 -my-1 hover:text-gold">About</Link></li>
+              <li><Link href="/contact" className="inline-block py-1 -my-1 hover:text-gold">Enquire</Link></li>
             </ul>
           </div>
           <div>
