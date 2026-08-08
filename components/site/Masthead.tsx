@@ -61,16 +61,20 @@ export function Masthead() {
         <div className="flex h-[58px] items-center justify-between gap-4 rounded-lg border border-[rgba(7,43,40,0.08)] bg-white pl-4 pr-3 shadow-[0_4px_24px_rgba(7,43,40,0.10)] md:h-[68px] md:pl-6 md:pr-4">
           {/*
             ==== NAV LOGO SIZE — TUNE HERE ====
-            `w-[96px] md:w-[130px]` is the only thing to change. Height is
+            `w-[96px] md:w-[118px]` is the only thing to change. Height is
             derived (h-auto), so the aspect ratio cannot be distorted by
             editing one number.
 
             There is a ceiling, and it is close. The asset is trimmed to its
             artwork, aspect 2.064, and the pill height is fixed at 58px /
-            68px. At the current 130px the logo renders 63px tall inside the
-            68px pill — 2.5px of clearance top and bottom. Going much past
-            130px means growing the pill, which Sprint 6i explicitly ruled
-            out. Mobile is held at 96px (46.5px tall in the 58px pill).
+            68px. Sprint 6i took this to 130px, which renders 63.0px tall in
+            the 68px pill — 2.5px of clearance top and bottom, tight enough
+            that the mark read as jammed against the pill rather than set
+            inside it. At 118px it renders 57.2px tall, giving 5.4px per
+            side. Going much past 130px means growing the pill, which Sprint
+            6i explicitly ruled out. Mobile is unchanged at 96px (46.5px
+            tall in the 58px pill, 5.7px of clearance) — the two sides were
+            already close and 118px brings desktop into line with it.
 
             Source is the trimmed AVIF in public/brand/, not the raw PNG:
             the original carried 33px of transparent padding down one side,
@@ -83,7 +87,7 @@ export function Masthead() {
               width={260}
               height={126}
               priority
-              className="h-auto w-[96px] md:w-[130px]"
+              className="h-auto w-[96px] md:w-[118px]"
             />
           </Link>
 
