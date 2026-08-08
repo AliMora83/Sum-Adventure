@@ -274,3 +274,218 @@ to come, so nothing on the page is wrong or misleading in the meantime — it is
 simply less complete than it will be. **Chase the names, but do not hold
 launch for them**, and do not set `confirmed: true` to clear a build: that flag
 is what keeps the placeholder off the page.
+
+---
+
+# RECONCILIATION — 8 August 2026 (Sprint 6L)
+
+Verification pass over Sprints 6c–6k. **Everything below is OPEN and recorded
+only** — Sprint 6L fixed nothing by design. Fixes are a later sprint's work.
+
+Findings are transcribed as measured. Where a sprint brief's expectation and
+the codebase disagree, both are stated; "DIVERGED" means the two differ, not
+necessarily that the code is wrong.
+
+## D1 — Sprint 6c–6k feature verification
+
+| Item | Expected | Actual | Verdict |
+| --- | --- | --- | --- |
+| Palette tokens | teal `#15665F`, surface `#072B28`, gold `#D9AA5E` | all three present; `#15665F` is `--color-teal-deep`, `--color-teal` is `#219389` | VERIFIED (naming) |
+| Radius scale | `--radius-lg` 16px buttons, 12px cards | 8/12/16 in `@theme`; `Button.tsx` `rounded-lg`, cards `rounded-md`; no `rounded-full` or 999px anywhere | VERIFIED |
+| Masthead width/logo | 70vw, centred, **sticky**, 118px / 96px | 70vw ✓, centred ✓, 118/96 ✓ — but `position: fixed`, not sticky (`Masthead.tsx:59`) | **DIVERGED** |
+| `app/(rail)/` group | rail structurally absent from /contact | `AltitudeRail` mounted only in `(rail)/page.tsx`; absent from /contact markup | VERIFIED |
+| Nav links | HOME first, no CONTACT | `Masthead.tsx:11-16` — Home, About, Tsikoane, Tours | VERIFIED |
+| Elevation eyebrows | absent from non-home pages | `<Station>` only in Hlotse/TourGrid/Tsikoane (all homepage) | VERIFIED |
+| JSON-LD + guard | scaffold + non-localhost guard | `app/layout.tsx:83`; `data/organization.ts` guard scope `any-deploy` | VERIFIED |
+| Favicon wiring | present | `app/icon.png` 32×32 (3,678 B), `app/apple-icon.png` 180×180 (15,859 B) | VERIFIED |
+| Footer logo | AVIF, wordmark removed | `/brand/sum-logo-dark.avif`; no display-type wordmark | VERIFIED |
+| Placeholder colour | `#5F7671` | `EnquiryForm.tsx:44` | VERIFIED |
+| Input font size | 16px | `text-base` | VERIFIED |
+| Hero scrim | 55% | `via-surface-dark/55` (`Hero.tsx:30`) | VERIFIED |
+| Footer link targets | 28px | measured 28.0px on all four; li pitch 28px | VERIFIED |
+| Input border | `teal-deep/70` | `EnquiryForm.tsx:44` | VERIFIED |
+| `unoptimized` scope | both marks, nowhere else | exactly 2 call sites (Masthead, Footer); 6 photographic sites untouched | VERIFIED |
+| Pass guard | `assertNoProvisional` + render filter | `data/passes.ts` (`any-deploy`) + filter at `Tsikoane.tsx:159` | VERIFIED |
+| Tsikoane elevation | 1,881 m, no provisional flag | `data/stations.ts:35`; no station flagged | VERIFIED |
+| Afriski Winter Day Trip | present as a **past** trip, no date field | `status: "upcoming"` (`data/tours.ts:41`) — all three tours upcoming; no date field on `Tour` ✓ | **DIVERGED** |
+
+**DIVERGED — detail.**
+
+1. **Masthead is `fixed`, not `sticky`** — `components/site/Masthead.tsx:59`.
+   Deliberate and documented in the file: as the first child of `<body>` a
+   `sticky` element sits at its flow position until scrolled past, so it would
+   push the hero down and not overlay it. Recorded as a divergence from the
+   stated expectation, not as a defect.
+2. **Afriski Winter Day Trip is `upcoming`, not `past`** — `data/tours.ts:41`.
+   This matches CLAUDE.md invariant 8 and `docs/client-profile.md:125-131`: it
+   was marked past in Sprint 4.5 and restored to `upcoming` in Sprint 5.5 on the
+   client's instruction, as a standing activity. **No tour in committed data
+   carries `status: "past"`**, so the past-tour render path is still unexercised
+   in committed state. The expectation, not the code, appears stale.
+
+## D2 — Documentation reconciliation
+
+`docs/Client-ToDo.md` **does not exist** and could not be reconciled.
+
+Stale or false claims found:
+
+| File | Line | Claim | Reality |
+| --- | --- | --- | --- |
+| `CLAUDE.md` | 211 | "There is currently no JSON-LD or other structured data on the site" | **FALSE.** JSON-LD landed Sprint 6f; emitted at `app/layout.tsx:83`. Also self-contradictory — invariant 1 discusses that same block at length. |
+| `docs/launch-checklist.md` | 130 | "there is no JSON-LD or other structured data in this repo" | **FALSE**, same reason. |
+| `CLAUDE.md` | 329 | "`public/sum-logo.png` is the masthead logo" | **FALSE.** Masthead uses `/brand/sum-logo.avif`. `public/sum-logo.png` (65,781 B) is referenced nowhere. |
+| `CLAUDE.md` | 407 | "`Masthead.tsx` was rebuilt around `public/sum-logo.png`" | Stale — same reason. |
+| `CLAUDE.md` | 382 | "the masthead currently ships the raster PNG" | Stale — ships AVIF. |
+| `CLAUDE.md` | 342 | names `public/images/sumadv-icon.png` and `sumadv-logo.png` | **Neither file exists.** |
+| `CLAUDE.md` | 375–379 | knockout/reversed variant "expected this week, and the footer is waiting on it"; footer "renders the wordmark SUM ADVENTURES in white display type and no mark, with a TODO" | **FALSE.** The variant landed in Sprint 6i; the footer renders `/brand/sum-logo-dark.avif` and there is no TODO. |
+| `CLAUDE.md` | 408 | "Favicon … `app/icon.png` (800×800, the supplied artwork unmodified)" | **FALSE**, and contradicted by lines 332–334 of the same file. Actual: 32×32, 3,678 B. |
+| `CLAUDE.md` | invariant 6 | describes the pass placeholders without naming their location | Stale — they moved to `data/passes.ts` in Sprint 6k and gained a build guard. |
+
+**Invariants tested against the codebase — one is false today.** Invariants 1,
+2, 3, 3b, 4, 5, 7 and 9 all hold as written. Invariant 8 holds except for its
+closing sentence about structured data (row 1 above).
+
+Invariant 1's wording is **correct as it stands** and was specifically
+re-checked: it states there is exactly one `"use client"`, names
+`EnquiryForm.tsx` as the sanctioned exception, and explicitly exempts the
+`ld+json` block. It does not say zero client components. Verified against the
+tree: `use client` appears in `EnquiryForm.tsx` only.
+
+## D3 — UNVERIFIED items
+
+Both remain **UNVERIFIED and unverifiable locally.** No deployment of this
+project exists; no real hostname is recorded anywhere in this repo, and none is
+invented here. Where a hostname is needed below it is `example.invalid`, a
+reserved non-resolving TLD, **and it is a stand-in, not configuration.**
+
+**Production `robots.txt`.** `app/robots.ts:26` branches on
+`VERCEL_ENV === "production"`. Locally the non-production branch is confirmed:
+`GET /robots.txt` off `next start` returns `User-Agent: *` / `Disallow: /`. The
+production branch cannot be reached locally in any meaningful sense — setting
+`VERCEL_ENV=production` by hand exercises the branch but resolves the sitemap
+against `NEXT_PUBLIC_SITE_URL`, which is `http://localhost:3000` here, so the
+output would assert a localhost sitemap and prove nothing about production. To
+verify: deploy to production, `curl https://<real-domain>/robots.txt`, confirm
+`Allow: /` and that the `Sitemap:` line names the real origin, then confirm
+`/sitemap.xml` lists that same origin. Requires a real deployed hostname.
+
+**Absence of `X-Robots-Tag` in production.** `next.config.ts:36` returns no
+headers when `VERCEL_ENV === "production"`. Presence on non-production is
+confirmed locally — `curl -D -` off `next start` shows `X-Robots-Tag: noindex`.
+**Absence cannot be verified locally at all**: a local build has `VERCEL_ENV`
+unset, which is the non-production branch by definition. To verify: `curl -I`
+the live production origin and confirm no `X-Robots-Tag` is present on an HTML
+response. Requires a real deployed hostname. This is the higher-risk of the
+two — a stray `noindex` in production deindexes the entire site silently.
+
+## D4 — Orphans and dead paths
+
+**a) Unreferenced files in `public/`** (referenced = named in `app/`,
+`components/`, `lib/` or `data/`; a mention in a sprint doc does not count).
+
+*Deliberately retained, documented in CLAUDE.md — not orphans:*
+
+| File | Bytes |
+| --- | --- |
+| `public/images/footprints-1.jpg` | 400,487 |
+| `public/images/footprints-3.jpeg` | 242,477 |
+| `public/brand/icon-source.png` | 41,205 |
+| `public/brand/apple-icon-source.png` | 15,859 |
+| **Subtotal** | **700,028** |
+
+*Master alongside its AVIF, but undocumented:*
+
+| File | Bytes |
+| --- | --- |
+| `public/brand/sum-logo-dark.png` | 100,508 |
+
+*Genuine orphans — no code reference, no documented reason:*
+
+| File | Bytes |
+| --- | --- |
+| `public/images/horse-1.jpg` | 140,811 |
+| `public/images/mount-4.jpg` | 129,724 |
+| `public/images/mount-2.jpg` | 126,353 |
+| `public/images/skii-7.jpg` | 116,926 |
+| `public/images/mount-3.jpg` | 104,644 |
+| `public/images/skii-6.jpg` | 72,763 |
+| `public/sum-logo.png` | 65,781 |
+| `public/images/mount-1.jpg` | 59,869 |
+| `public/images/skii-4.jpg` | 59,119 |
+| `public/images/dessert-1.jpg` | 45,268 |
+| `public/images/skii-2.jpg` | 28,311 |
+| **Subtotal** | **949,569 (927.3 KiB)** |
+
+These ship in the repo but not to browsers — `public/` is served on demand, so
+this is repo weight, not page weight.
+
+**b) Exports with no external call site.** Six, all consumed inside their own
+module. Surplus `export` keywords, **not dead code**: `OrgField` and
+`organizationJsonLd` (`data/organization.ts`), `SummitPass`
+(`data/passes.ts`), `GuardScope` and `isGuardedDeploy` (`lib/provisional.ts`),
+`WHATSAPP_NUMBER` (`lib/whatsapp.ts`).
+
+**c) `app/(rail)/layout.tsx` is a vestigial passthrough.** It renders
+`<>{children}</>` and nothing else; the route-group name no longer describes
+what it does, since the rail moved into `(rail)/page.tsx`. The file says so
+itself and says removal needs sign-off because it means moving files. Recorded,
+not touched.
+
+**`.anim-parallax` / `alt-settle`: both present and retained by decision.**
+`app/globals.css:198` and `:252`, unused in markup, with the explaining note at
+`CLAUDE.md:321`. **These are not dead code and are not flagged as such.**
+
+## D5 — Build and route health
+
+Clean `rm -rf .next && npm run build`: **passes, no warnings.** Next.js 16.2.12
+(Turbopack), TypeScript clean, 13/13 static pages. `npm run lint` clean.
+`use client` appears in `components/forms/EnquiryForm.tsx` **only**.
+
+Turbopack does not print per-route JS, so this was measured off a production
+`next start`, per route, as compressed transfer:
+
+| Route | HTML | JS chunks | First-load JS (enc / dec) | CSS |
+| --- | --- | --- | --- | --- |
+| `/` | 15,145 B | 7 | 153,644 / 534,855 B | 8,671 B |
+| `/about` | 6,980 B | 7 | 153,644 / 534,855 B | 8,671 B |
+| `/tours` | 7,458 B | 7 | 153,644 / 534,855 B | 8,671 B |
+| `/tours/[slug]` | 7,229 B | 7 | 153,644 / 534,855 B | 8,671 B |
+| `/contact` | 9,329 B | 8 | 156,110 / 541,466 B | 8,671 B |
+
+`/contact` carries one extra chunk, **+2,466 B compressed** — the measured cost
+of the single sanctioned client boundary.
+
+**Total page weight for `/` — 803,120 B (784.3 KiB) compressed**, 18 assets,
+all 7 images loaded, measured at 1280×900 @DPR2 off a production server:
+
+| Category | Bytes | Share |
+| --- | --- | --- |
+| Images | 515,452 | 64.2% |
+| JavaScript | 153,644 | 19.1% |
+| Fonts | 110,208 | 13.7% |
+| HTML | 15,145 | 1.9% |
+| CSS | 8,671 | 1.1% |
+| **Total** | **803,120** | |
+
+Uncompressed that is 1,294,147 B. The figure is viewport-dependent: at DPR2 the
+hero and Tsikoane images resolve to their `w=1920` candidates (96,385 B and
+198,201 B), which is 37% of the page on their own. **Imagery, not JavaScript,
+is what this page costs.**
+
+## Open items from this pass
+
+All OPEN. None fixed in Sprint 6L.
+
+1. CLAUDE.md:211 and launch-checklist:130 — the "no JSON-LD" claim is false.
+2. CLAUDE.md:329/342/375–379/382/407/408 — six stale brand-asset and footer
+   claims, including two files that do not exist and one self-contradiction.
+3. CLAUDE.md invariant 6 — does not name `data/passes.ts` or the 6k guard.
+4. `docs/Client-ToDo.md` — referenced by the sprint brief, does not exist.
+5. Masthead is `fixed`, not `sticky` — expectation vs code, code deliberate.
+6. No tour carries `status: "past"` in committed data.
+7. 949,569 B of genuinely orphaned files in `public/`, plus one undocumented
+   100,508 B master PNG.
+8. Six surplus exports.
+9. `app/(rail)/layout.tsx` vestigial; route-group name inaccurate.
+10. Both `robots.txt` and `X-Robots-Tag` items remain unverifiable without a
+    real deployment.
