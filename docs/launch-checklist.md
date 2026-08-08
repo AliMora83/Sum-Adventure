@@ -217,18 +217,60 @@ launch:
 Swapping the hero image without re-sampling is the defect this item exists to
 prevent.
 
-### Image codec policy for flat vector artwork — OPEN
+### ~~Image codec policy for flat vector artwork~~ — RESOLVED, Sprint 6k
 
-**Status: UNRESOLVED.** Pending Deliverable 4 of Sprint 6j.
+**Outcome: AVIF retained for both brand marks. The optimiser is bypassed
+instead.** `CLAUDE.md` is unamended — the AVIF-first invariant stands as
+written and was never the problem.
 
-The AVIF-first invariant is under review **for flat vector artwork only** —
-the brand marks in `public/brand/`, not photography, where AVIF is not in
-question.
+The Sprint 6i D5 benchmark (400px: PNG8 5,829 B vs AVIF 12,677 B) compared two
+things that are not comparable, on a pipeline that discards the comparison:
 
-The Sprint 6i D5 benchmark measured, at 400px: **PNG8 5,829 B vs AVIF
-12,677 B**, i.e. the palette PNG at roughly half the bytes. That result is what
-put the invariant under review.
+- **Not like for like.** libvips collapses any palette request of ≤128 colours
+  to a 16-entry, 4-bit palette, so the 5,829 B file was a **16-colour** image,
+  not a faithful one. Re-measured at the marks' own dimensions: a faithful
+  256-colour PNG8 is *larger* than AVIF (1.31× nav, 1.46× footer), and PNG24 is
+  4.0–4.7×. The 16-colour file is genuinely small and shows no banding — there
+  are no gradients in this artwork to band, the pin, sun and mountains are flat
+  fills — but it costs the tagline, which degrades by mean Δ10/255 across a
+  third to a half of its pixels at render size. Alpha survives palette
+  conversion cleanly in every variant.
+- **Source bytes were never the shipped bytes.** Both marks went through
+  `/_next/image`, which re-encodes to AVIF regardless of source format. The
+  source container never reached a browser, so a source-file comparison could
+  not have decided anything.
 
-Nothing has been swapped and `CLAUDE.md` is unamended. Resolve this item from
-the Sprint 6j D4 findings — which include a banding check at render size and an
-alpha-preservation check — not from the byte figures above on their own.
+The real finding was in that second point: the optimiser's q=75 re-encode was
+returning **larger** files than the committed sources, which are already AVIF,
+already trimmed and already at their 2× display dimensions. Sprint 6k added
+`unoptimized` to both marks — nav 12,435 B → 9,489 B, footer 19,210 B →
+14,033 B, **8,123 B saved** — and both now serve byte-identical to source, at
+unchanged dimensions, with CLS 0 and slightly better fidelity than before.
+
+The exemption is scoped to those two call sites. Photography stays on the
+optimiser; do not generalise this.
+
+### Five Tsikoane summit pass names outstanding from Mpho — NOT a launch blocker
+
+**Status: content gap. Does not block launch.**
+
+Five of the six passes (`02`–`06`) are placeholders in `data/passes.ts` —
+`"Pass two"`…`"Pass six"`, each `confirmed: false`. Only `01 Linareng Pass` is
+confirmed. See "Outstanding from the client" in `CLAUDE.md`.
+
+**They cannot reach the page.** As of Sprint 6k they are double-guarded:
+
+1. `Tsikoane.tsx` filters to `confirmed` passes at render, so only Linareng is
+   emitted. Verified against build output — the placeholder strings appear only
+   in a server-only SSR chunk, never in a client bundle, prerendered HTML or an
+   RSC payload.
+2. `data/passes.ts` calls `assertNoProvisional` at scope `any-deploy`, so any
+   build with `VERCEL_ENV` set to anything but `development` aborts while an
+   unconfirmed pass remains. Verified by building, not by reading: preview
+   exits 1 naming all five.
+
+The section already tells the reader the count is six and that five names are
+to come, so nothing on the page is wrong or misleading in the meantime — it is
+simply less complete than it will be. **Chase the names, but do not hold
+launch for them**, and do not set `confirmed: true` to clear a build: that flag
+is what keeps the placeholder off the page.
