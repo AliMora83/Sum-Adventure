@@ -16,29 +16,32 @@ const initialState: EnquiryState = { status: "idle" };
  * white and failed AA outright; this one is 4.86:1. Placeholder text is real
  * text and is held to the 4.5:1 threshold like any other.
  *
- * The border is `teal-deep/65`, up from /30, and it is load-bearing rather
- * than decoration: the white field is 1.10:1 against the ice page background,
- * so with no border there is effectively no visible edge at all and SC 1.4.11
+ * The border is `teal-deep/70`, and it is load-bearing rather than
+ * decoration: the white field is 1.10:1 against the ice page background, so
+ * with no border there is effectively no visible edge at all and SC 1.4.11
  * has nothing to measure.
  *
- * The border has TWO adjacent surfaces and they do not measure the same.
- * Tailwind v4 resolves the alpha in oklab, so these are sampled off a real
- * composited pixel rather than derived by sRGB arithmetic. At /65 the border
- * renders rgb(103,155,151) — `background-clip` defaults to `border-box`, so
- * the field's own white paints underneath the border, which is why the
- * rendered value is the same on both sides:
+ * The border has TWO adjacent surfaces, and the OUTER one decides pass/fail.
+ * `background-clip` defaults to `border-box`, so the field's own white paints
+ * underneath the border and the rendered colour is identical on both sides —
+ * but it is measured against white on the inside and against ice on the
+ * outside, and ice is the darker neighbour, so the outer ratio is always the
+ * lower of the two. Sizing to the inner ratio alone is how /65 shipped short.
  *
- *   vs the white field interior   3.13:1   clears 3:1
- *   vs the ice page background    2.84:1   does NOT clear 3:1
+ * Tailwind v4 resolves the alpha in oklab, not sRGB, so these are sampled off
+ * a real composited pixel rather than derived from the alpha value. At /70 the
+ * border renders rgb(91,148,143):
  *
- * The inner boundary passes and the outer one is 0.16 short. Recorded rather
- * than silently fixed: /70 is the first step that clears both (3.46 inner,
- * 3.14 outer) and is the change to make if the outer edge is ruled in scope.
- * Do not lower below /65 — /30 was 1.60:1 and 1.46:1, i.e. no measurable edge
- * on either side.
+ *   vs the white field interior   3.46:1   clears 3:1
+ *   vs the ice page background    3.14:1   clears 3:1  <- the binding one
+ *
+ * History, so neither step is re-tried: /30 was 1.60 inner / 1.46 outer — no
+ * measurable edge on either side. /65 was 3.13 inner / 2.84 outer, which
+ * passes only if you measure the side that isn't binding. Do not lower below
+ * /70 without re-measuring against ice.
  */
 const fieldClass =
-  "mt-2 w-full rounded-sm border border-teal-deep/65 bg-white px-4 py-3 text-base text-surface-dark placeholder:text-[#5F7671] focus-visible:border-teal-deep";
+  "mt-2 w-full rounded-sm border border-teal-deep/70 bg-white px-4 py-3 text-base text-surface-dark placeholder:text-[#5F7671] focus-visible:border-teal-deep";
 const labelClass = "block font-mono text-[11px] uppercase tracking-[0.14em] text-[#586A67]";
 const errorClass = "mt-1.5 text-[13px] text-teal-deep";
 
