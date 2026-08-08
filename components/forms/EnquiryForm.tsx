@@ -15,9 +15,30 @@ const initialState: EnquiryState = { status: "idle" };
  * The placeholder is #5F7671, not #8AA09C. The old value measured 2.77:1 on
  * white and failed AA outright; this one is 4.86:1. Placeholder text is real
  * text and is held to the 4.5:1 threshold like any other.
+ *
+ * The border is `teal-deep/65`, up from /30, and it is load-bearing rather
+ * than decoration: the white field is 1.10:1 against the ice page background,
+ * so with no border there is effectively no visible edge at all and SC 1.4.11
+ * has nothing to measure.
+ *
+ * The border has TWO adjacent surfaces and they do not measure the same.
+ * Tailwind v4 resolves the alpha in oklab, so these are sampled off a real
+ * composited pixel rather than derived by sRGB arithmetic. At /65 the border
+ * renders rgb(103,155,151) — `background-clip` defaults to `border-box`, so
+ * the field's own white paints underneath the border, which is why the
+ * rendered value is the same on both sides:
+ *
+ *   vs the white field interior   3.13:1   clears 3:1
+ *   vs the ice page background    2.84:1   does NOT clear 3:1
+ *
+ * The inner boundary passes and the outer one is 0.16 short. Recorded rather
+ * than silently fixed: /70 is the first step that clears both (3.46 inner,
+ * 3.14 outer) and is the change to make if the outer edge is ruled in scope.
+ * Do not lower below /65 — /30 was 1.60:1 and 1.46:1, i.e. no measurable edge
+ * on either side.
  */
 const fieldClass =
-  "mt-2 w-full rounded-sm border border-teal-deep/30 bg-white px-4 py-3 text-base text-surface-dark placeholder:text-[#5F7671] focus-visible:border-teal-deep";
+  "mt-2 w-full rounded-sm border border-teal-deep/65 bg-white px-4 py-3 text-base text-surface-dark placeholder:text-[#5F7671] focus-visible:border-teal-deep";
 const labelClass = "block font-mono text-[11px] uppercase tracking-[0.14em] text-[#586A67]";
 const errorClass = "mt-1.5 text-[13px] text-teal-deep";
 
