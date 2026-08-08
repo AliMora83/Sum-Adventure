@@ -184,3 +184,51 @@ state, not dead code. See CLAUDE.md invariant 5.
 **This does not verify anything above.** It removes one of two blockers. The
 three unverified items are now waiting on a connected deployment, which is
 parked — see the top of this file.
+
+---
+
+## Blocked on client assets
+
+### Hero scrim must be re-sampled against Mpho's photography — BLOCKING
+
+**Status: BLOCKING for launch. Blocked on: the real hero photograph.**
+
+The hero H1 currently measures **4.41:1** worst case, with the scrim's `via`
+stop at **surface-dark/55** (`components/sections/Hero.tsx`). Both figures are
+recorded here so the comparison can actually be made later.
+
+**That 4.41 is a property of the current placeholder photograph, not of the
+scrim.** It is the worst pixel in `public/images/skii-1.jpg` under the 55%
+stop. A different photograph with a brighter region behind the headline will
+produce a different number at the identical scrim value, and nothing in the
+build will notice — this is exactly the failure Sprint 6i found at the old 30%
+stop, where the headline measured 2.43:1 and passed only because that photo's
+bright area happened to fall away from where the headline sits.
+
+When Mpho's photography lands and the hero image is swapped, re-sample before
+launch:
+
+- measure the H1 against the **worst** pixel of the new image in the headline's
+  actual footprint, not an average and not a convenient region
+- compare against the recorded 4.41:1 at 55%
+- if the new figure drops below the threshold, raise the scrim stop until it
+  clears — do not change the type colour (CLAUDE.md invariant 3)
+
+Swapping the hero image without re-sampling is the defect this item exists to
+prevent.
+
+### Image codec policy for flat vector artwork — OPEN
+
+**Status: UNRESOLVED.** Pending Deliverable 4 of Sprint 6j.
+
+The AVIF-first invariant is under review **for flat vector artwork only** —
+the brand marks in `public/brand/`, not photography, where AVIF is not in
+question.
+
+The Sprint 6i D5 benchmark measured, at 400px: **PNG8 5,829 B vs AVIF
+12,677 B**, i.e. the palette PNG at roughly half the bytes. That result is what
+put the invariant under review.
+
+Nothing has been swapped and `CLAUDE.md` is unamended. Resolve this item from
+the Sprint 6j D4 findings — which include a banding check at render size and an
+alpha-preservation check — not from the byte figures above on their own.
