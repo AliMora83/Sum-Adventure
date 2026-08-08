@@ -26,12 +26,26 @@ export function Footer() {
               ==== FOOTER LOGO SIZE — TUNE HERE ====
               `w-[200px]`. Height derives from it. The asset is trimmed and
               served at 2x (400px) for retina.
+
+              `unoptimized` IS DELIBERATE — do not remove it as an oversight.
+              This asset is already AVIF, already trimmed, and already at
+              exactly the 2x dimensions it is displayed at, so /_next/image has
+              nothing left to do but re-encode it. Measured in Sprint 6j: the
+              optimiser re-encodes at q=75 and returns a LARGER file than the
+              committed source (14,033 B source -> 19,210 B served). Bypassing
+              it serves the source bytes verbatim.
+
+              Scope: this exemption is for pre-sized flat vector brand artwork
+              only. Photography stays on the optimiser, where responsive widths
+              and format negotiation are doing real work — see the hero and the
+              tour grid, which must not get this prop.
             */}
             <Image
               src="/brand/sum-logo-dark.avif"
               alt="Sum Adventures"
               width={400}
               height={196}
+              unoptimized
               className="h-auto w-[200px]"
             />
             <p className="mt-3 font-mono text-xs tracking-[0.1em]">

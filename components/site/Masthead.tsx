@@ -79,6 +79,19 @@ export function Masthead() {
             Source is the trimmed AVIF in public/brand/, not the raw PNG:
             the original carried 33px of transparent padding down one side,
             which is why the old 85px render looked smaller than its box.
+
+            `unoptimized` IS DELIBERATE — do not remove it as an oversight.
+            This asset is already AVIF, already trimmed, and already at the
+            2x dimensions it is displayed at, so /_next/image has nothing left
+            to do but re-encode it. Measured in Sprint 6j: the optimiser
+            re-encodes at q=75 and returns a LARGER file than the committed
+            source (9,489 B source -> 12,435 B served). Bypassing it serves
+            the source bytes verbatim.
+
+            Scope: pre-sized flat vector brand artwork only. Photography stays
+            on the optimiser, where responsive widths and format negotiation
+            are doing real work — the hero and the tour grid must not get this
+            prop.
           */}
           <Link href="/" className="flex shrink-0 items-center" aria-label="Sum Adventures — home">
             <Image
@@ -87,6 +100,7 @@ export function Masthead() {
               width={260}
               height={126}
               priority
+              unoptimized
               className="h-auto w-[96px] md:w-[118px]"
             />
           </Link>
