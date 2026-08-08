@@ -4,22 +4,8 @@ import { Contours } from "@/components/ui/Contours";
 import { Button } from "@/components/ui/Button";
 import { stations } from "@/data/stations";
 import { tours, formatPrice } from "@/data/tours";
+import { passes } from "@/data/passes";
 import { tourEnquiryLink } from "@/lib/whatsapp";
-
-/**
- * Six named passes reach the summit. Only Linareng is confirmed — the
- * caves route. The other five are placeholders pending the client, kept
- * here (not deleted) so they render automatically once named — see the
- * render-time filter below.
- */
-const passes = [
-  { n: "01", name: "Linareng Pass", note: "caves route", confirmed: true },
-  { n: "02", name: "Pass two", note: "name tbc", confirmed: false },
-  { n: "03", name: "Pass three", note: "name tbc", confirmed: false },
-  { n: "04", name: "Pass four", note: "name tbc", confirmed: false },
-  { n: "05", name: "Pass five", note: "name tbc", confirmed: false },
-  { n: "06", name: "Pass six", note: "name tbc", confirmed: false },
-];
 
 /**
  * Condensed from the full inclusions list in docs/client-profile.md — the
@@ -161,6 +147,14 @@ export function Tsikoane() {
               <span className="h-px w-10 bg-current opacity-30" />
               Summit passes
             </p>
+            {/* KEEP THIS FILTER. Only Linareng is confirmed; the other five
+                are placeholders awaiting Mpho (CLAUDE.md invariant 6). As of
+                Sprint 6k `data/passes.ts` also throws at import time on any
+                deployed build while an unconfirmed pass remains, but that
+                guard is a backstop — this line is what actually keeps the
+                placeholders off the page, including on a local build where
+                the guard is deliberately a no-op. Removing it ships five
+                invented pass names. */}
             <ul>
               {passes.filter((p) => p.confirmed).map((p) => (
                 <li
