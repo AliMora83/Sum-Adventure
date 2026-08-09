@@ -522,3 +522,80 @@ nothing, by design.** Two remain open and both need the same thing.
     without a real deployed hostname. Neither may be ticked from a local
     build, and neither may be evaluated against a stand-in. See the UNVERIFIED
     section at the top of this file, and D3 of the 6L pass above.
+
+---
+
+# Asset provenance — 8 August 2026 (Sprint 6M)
+
+Ali's ruling on the Sprint 6L "orphan" list. **Nothing here is an orphan and
+nothing was deleted.** This section exists so a future reconciliation pass does
+not re-flag these files. Counts and byte sizes were measured directly, not
+carried over from the 6L report.
+
+## RESERVED — Phase 2 Gallery
+
+Client-supplied photography held for the Gallery page. Unreferenced from code
+**by design**, exactly as `footprints-1.jpg` and `footprints-3.jpeg` already
+were. Do not delete, and do not report as dead assets.
+
+| File | Bytes | Dimensions |
+| --- | --- | --- |
+| `public/images/horse-1.jpg` | 140,811 | 1280×853 |
+| `public/images/mount-4.jpg` | 129,724 | 1280×853 |
+| `public/images/mount-2.jpg` | 126,353 | 1280×853 |
+| `public/images/skii-7.jpg` | 116,926 | 1280×853 |
+| `public/images/mount-3.jpg` | 104,644 | 1280×960 |
+| `public/images/skii-6.jpg` | 72,763 | 1280×853 |
+| `public/images/mount-1.jpg` | 59,869 | 1280×960 |
+| `public/images/skii-4.jpg` | 59,119 | 1280×853 |
+| `public/images/dessert-1.jpg` | 45,268 | 1280×960 |
+| `public/images/skii-2.jpg` | 28,311 | 1280×853 |
+| **10 files** | **883,788 B (863.0 KiB)** | all JPEG |
+
+**Count correction.** The 6M brief described this as 11 images totalling
+~927 KiB. That figure was the 6L orphan subtotal, which included
+`public/sum-logo.png` (65,781 B) — reclassified below as a logo master, not
+Gallery material. Excluding it: **10 files, 883,788 B (863.0 KiB)**, measured.
+
+Adding the two footprints already reserved in CLAUDE.md
+(`footprints-1.jpg` 400,487 B and `footprints-3.jpeg` 242,477 B), the full
+Phase 2 Gallery pool is **12 files, 1,526,752 B (1.46 MiB)**.
+
+### Phase 2 task — convert the Gallery set to AVIF
+
+**Do not convert now.** These are raw JPEG at 1280px and none is referenced, so
+they cost repo weight only and nothing on the wire. When the Gallery page is
+built they become page weight, and 1.46 MiB of JPEG on one page would be by far
+the heaviest thing on this site — for context, the entire homepage is 784.3 KiB
+today, of which 64% is already imagery.
+
+Convert at that point, not before, and measure rather than assume: Sprint 6J
+found the image optimiser re-encodes at q=75 and can produce a *larger* file
+than a well-made source. Whether the Gallery serves pre-made AVIF with
+`unoptimized` or goes through `/_next/image` is a decision to make with numbers
+in hand, the same way the two brand marks were decided.
+
+## Logo masters — unreferenced by design
+
+Untrimmed sources for the two AVIFs the site actually ships. Same status as
+`public/brand/icon-source.png` and `apple-icon-source.png`: re-cut from these,
+never from a shipped AVIF. **Do not delete.**
+
+| Master | Bytes | Dimensions | Ships as | Bytes | Dimensions |
+| --- | --- | --- | --- | --- | --- |
+| `public/sum-logo.png` | 65,781 | 800×416 | `public/brand/sum-logo.avif` (masthead) | 9,489 | 260×126 |
+| `public/brand/sum-logo-dark.png` | 100,508 | 966×585 | `public/brand/sum-logo-dark.avif` (footer) | 14,033 | 400×196 |
+
+The aspect ratios differ between each master and its AVIF — 1.923 → 2.063 and
+1.651 → 2.041 — because the masters carry transparent padding that the shipped
+AVIFs have trimmed away. That padding is why an earlier 85px masthead render
+looked smaller than its box.
+
+`public/brand/sum-logo-dark.png` was undocumented before this sprint, which is
+why 6L could not classify it. Both are now recorded here and in CLAUDE.md.
+
+## Files in `public/` with no documented reason
+
+**None.** Every unreferenced file in `public/` is now accounted for: 12 Phase 2
+Gallery images, 2 logo masters, and 2 favicon source masters
+(`brand/icon-source.png` 41,205 B, `brand/apple-icon-source.png` 15,859 B).
