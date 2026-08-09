@@ -127,9 +127,12 @@ Two consequences worth knowing:
   CTA suppression on the detail route, the `Past trip` badge and the metadata
   description. The data change was reverted and never committed. Details in
   `docs/sprint-6c.md`. (That sprint's notes list "structured data" among the
-  things covered — there is no JSON-LD or other structured data in this repo,
-  so there was nothing there to cover. CLAUDE.md invariant 8 is the standing
-  instruction for if any is ever added.)
+  things covered. At the time of that run — 1 August 2026 — there was none in
+  the repo, so there was genuinely nothing to cover. **JSON-LD landed
+  afterwards, in Sprint 6F**, and it carries organisation data only: no tour,
+  `Product` or `Event` schema exists, so no tour status reaches structured
+  data and the 6c run's conclusion is unaffected. CLAUDE.md invariant 8 is the
+  standing instruction if tour schema is ever added.)
 
   A local run does not make it production-verified. No tour carries
   `status: "past"` in committed data, and **blocked on: a connected
@@ -292,7 +295,7 @@ necessarily that the code is wrong.
 | --- | --- | --- | --- |
 | Palette tokens | teal `#15665F`, surface `#072B28`, gold `#D9AA5E` | all three present; `#15665F` is `--color-teal-deep`, `--color-teal` is `#219389` | VERIFIED (naming) |
 | Radius scale | `--radius-lg` 16px buttons, 12px cards | 8/12/16 in `@theme`; `Button.tsx` `rounded-lg`, cards `rounded-md`; no `rounded-full` or 999px anywhere | VERIFIED |
-| Masthead width/logo | 70vw, centred, **sticky**, 118px / 96px | 70vw ✓, centred ✓, 118/96 ✓ — but `position: fixed`, not sticky (`Masthead.tsx:59`) | **DIVERGED** |
+| Masthead width/logo | 70vw, centred, `fixed`, 118px / 96px | 70vw ✓, centred ✓, `fixed` ✓, 118/96 ✓ | VERIFIED (see 6M note) |
 | `app/(rail)/` group | rail structurally absent from /contact | `AltitudeRail` mounted only in `(rail)/page.tsx`; absent from /contact markup | VERIFIED |
 | Nav links | HOME first, no CONTACT | `Masthead.tsx:11-16` — Home, About, Tsikoane, Tours | VERIFIED |
 | Elevation eyebrows | absent from non-home pages | `<Station>` only in Hlotse/TourGrid/Tsikoane (all homepage) | VERIFIED |
@@ -307,21 +310,34 @@ necessarily that the code is wrong.
 | `unoptimized` scope | both marks, nowhere else | exactly 2 call sites (Masthead, Footer); 6 photographic sites untouched | VERIFIED |
 | Pass guard | `assertNoProvisional` + render filter | `data/passes.ts` (`any-deploy`) + filter at `Tsikoane.tsx:159` | VERIFIED |
 | Tsikoane elevation | 1,881 m, no provisional flag | `data/stations.ts:35`; no station flagged | VERIFIED |
-| Afriski Winter Day Trip | present as a **past** trip, no date field | `status: "upcoming"` (`data/tours.ts:41`) — all three tours upcoming; no date field on `Tour` ✓ | **DIVERGED** |
+| Afriski Winter Day Trip | `status: "upcoming"`, no date field | `status: "upcoming"` (`data/tours.ts:41`); no date field on `Tour` ✓ | VERIFIED (see 6M note) |
 
-**DIVERGED — detail.**
+**The two DIVERGED rows above were both stale expectations, not defects.**
+Reclassified in Sprint 6M and recorded here as expected behaviour, so that no
+future session "fixes" either one.
 
-1. **Masthead is `fixed`, not `sticky`** — `components/site/Masthead.tsx:59`.
-   Deliberate and documented in the file: as the first child of `<body>` a
-   `sticky` element sits at its flow position until scrolled past, so it would
-   push the hero down and not overlay it. Recorded as a divergence from the
-   stated expectation, not as a defect.
-2. **Afriski Winter Day Trip is `upcoming`, not `past`** — `data/tours.ts:41`.
-   This matches CLAUDE.md invariant 8 and `docs/client-profile.md:125-131`: it
-   was marked past in Sprint 4.5 and restored to `upcoming` in Sprint 5.5 on the
-   client's instruction, as a standing activity. **No tour in committed data
-   carries `status: "past"`**, so the past-tour render path is still unexercised
-   in committed state. The expectation, not the code, appears stale.
+1. **The masthead is `position: fixed`, and that is CORRECT** —
+   `components/site/Masthead.tsx:59`. **Do not change it to `sticky`.** As the
+   first child of `<body>`, a `sticky` element renders at its *flow* position
+   until the scroll passes it: it would sit flush to the viewport top at rest,
+   only acquire its offset after scrolling, and push the hero down by its own
+   height instead of floating over it. The pill has to clear the top edge from
+   the first frame and overlay the hero, which is exactly what `fixed` does.
+   Both are equally zero-JS. The reasoning is also in the file's own comment;
+   the 6L brief's expectation of "sticky" was the stale part.
+2. **Afriski Winter Day Trip at `status: "upcoming"` is CORRECT** —
+   `data/tours.ts:41`. It matches CLAUDE.md invariant 8 and
+   `docs/client-profile.md:125-131`: marked `past` in Sprint 4.5, restored to
+   `upcoming` in Sprint 5.5 on the client's own instruction, because they want
+   it presented as a standing activity with dates agreed per enquiry. Do not
+   flip it back without the client saying so.
+
+   **Consequence worth carrying forward: no tour in committed data carries
+   `status: "past"`.** The past-tour render path is therefore unexercised in
+   committed state — it was verified by a local, reverted data flip in Sprint
+   6c (see the standing-manual-steps section above) and has never rendered
+   from committed data. The 31 August 2026 Afriski flip is the first time it
+   will.
 
 ## D2 — Documentation reconciliation
 
@@ -474,18 +490,35 @@ is what this page costs.**
 
 ## Open items from this pass
 
-All OPEN. None fixed in Sprint 6L.
+Raised OPEN in Sprint 6L. Statuses updated in Sprint 6M — **6L itself fixed
+nothing, by design.** Two remain open and both need the same thing.
 
-1. CLAUDE.md:211 and launch-checklist:130 — the "no JSON-LD" claim is false.
-2. CLAUDE.md:329/342/375–379/382/407/408 — six stale brand-asset and footer
-   claims, including two files that do not exist and one self-contradiction.
-3. CLAUDE.md invariant 6 — does not name `data/passes.ts` or the 6k guard.
-4. `docs/Client-ToDo.md` — referenced by the sprint brief, does not exist.
-5. Masthead is `fixed`, not `sticky` — expectation vs code, code deliberate.
-6. No tour carries `status: "past"` in committed data.
-7. 949,569 B of genuinely orphaned files in `public/`, plus one undocumented
-   100,508 B master PNG.
-8. Six surplus exports.
-9. `app/(rail)/layout.tsx` vestigial; route-group name inaccurate.
-10. Both `robots.txt` and `X-Robots-Tag` items remain unverifiable without a
-    real deployment.
+1. **CLOSED (6M).** CLAUDE.md:211 and launch-checklist:130 — the "no JSON-LD"
+   claim. Both corrected: JSON-LD exists as of Sprint 6F and carries
+   organisation data only, with no tour, `Product` or `Event` schema.
+2. **CLOSED (6M).** Six stale brand-asset and footer claims in CLAUDE.md,
+   including two files that do not exist and one self-contradiction. All
+   corrected against the codebase.
+3. **CLOSED (6M).** CLAUDE.md invariant 6 now names `data/passes.ts` and both
+   guard layers.
+4. **CLOSED (6M).** `docs/Client-ToDo.md` created as a client meeting agenda,
+   sourced only from `client-profile.md`, this file and CLAUDE.md.
+5. **CLOSED (6M) — not a defect.** The masthead is `fixed` by design; see the
+   reclassification note above. Recorded as expected behaviour.
+6. **CLOSED (6M) — not a defect.** No tour carries `status: "past"` in
+   committed data, and `upcoming` is correct per the client's instruction. The
+   render-path consequence is recorded above rather than treated as a bug.
+7. **CLOSED (6M) — reclassified, not deleted.** Ali ruled the 6L "orphan" list
+   is reserved Phase 2 Gallery material, and the two loose PNGs are logo
+   masters. Recorded under *Asset provenance* below. Nothing was deleted.
+8. **OPEN.** Six surplus `export` keywords on symbols used only inside their
+   own module (`OrgField`, `organizationJsonLd`, `SummitPass`, `GuardScope`,
+   `isGuardedDeploy`, `WHATSAPP_NUMBER`). Cosmetic; not dead code.
+9. **CLOSED (6M).** `app/(rail)/layout.tsx` now carries a comment explaining
+   what group membership means and why the rail is absent outside it. The
+   passthrough itself is unchanged — removing it still needs sign-off.
+10. **OPEN — both, and both need the same thing.** The production `robots.txt`
+    branch and the absence of `X-Robots-Tag` in production remain unverifiable
+    without a real deployed hostname. Neither may be ticked from a local
+    build, and neither may be evaluated against a stand-in. See the UNVERIFIED
+    section at the top of this file, and D3 of the 6L pass above.
