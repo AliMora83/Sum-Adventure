@@ -185,6 +185,16 @@ pattern or leave a `TODO` — do not paper over the gap.
 Five of the six Tsikoane summit passes have placeholder names. Only Linareng
 Pass is confirmed. Leave the others as `name tbc`.
 
+They live in `data/passes.ts`, moved there from `Tsikoane.tsx` in Sprint 6K so
+they could carry a build guard. **Two layers keep them off the page and both
+must stay:** the render filter `passes.filter((p) => p.confirmed)` in
+`components/sections/Tsikoane.tsx`, which is what actually stops them
+rendering, and `assertNoProvisional` in `data/passes.ts` at scope
+`any-deploy`, which aborts any deployed build while an unconfirmed pass
+remains. The guard is a backstop against the filter being deleted; it is
+deliberately a no-op on a local build. Do not set `confirmed: true` to clear a
+build — that flag is the thing keeping the placeholder off the page.
+
 ### 7. Secrets
 
 `.env.local` only, never committed. `.env.example` documents required keys with
@@ -208,9 +218,15 @@ none should be added back for this reason: nothing about a tour's
 bookability should be inferred from a date. `status` is set explicitly per
 tour and only flips to `past` on the client's actual instruction.
 
-There is currently no JSON-LD or other structured data on the site. If any is
-added later, filter past tours out of it — a `Product`/`Event` schema listing
-a dead departure as bookable is worse than shipping no schema at all.
+There **is** JSON-LD on the site as of Sprint 6F — see invariant 1, which
+explains why that block is not a client-component violation. It carries
+**organisation data only**: a `TravelAgency` with a `Person` founder, a
+`PostalAddress` and a `Country`. **No tour, `Product` or `Event` schema
+exists**, so no tour data reaches structured data today.
+
+If tour schema is ever added, filter past tours out of it — a
+`Product`/`Event` listing a dead departure as bookable is worse than shipping
+no schema at all.
 
 ### 9. Never invent a config value — and label every stand-in
 
@@ -325,10 +341,15 @@ deliberately cut — handwriting fights the cartographic register.
   deliberately unreferenced — client-supplied, committed in Sprint 7 to be
   backed up, and reserved for the Gallery section in Phase 2. They are not
   dead assets; do not delete them.
-- The brand assets moved out of `public/images/` in Sprint 6C:
-  `public/sum-logo.png` is the masthead logo, and `sum-icon.png` became
-  `app/icon.png` (plus a 180×180 `app/apple-icon.png` resized from the same
-  source) so the App Router emits the icon tags.
+- The brand assets moved out of `public/images/` in Sprint 6C, and `sum-icon.png`
+  became `app/icon.png` (plus a 180×180 `app/apple-icon.png` resized from the
+  same source) so the App Router emits the icon tags.
+- **The two marks the site actually renders are AVIF, in `public/brand/`.**
+  The masthead ships `public/brand/sum-logo.avif` (260×126, 9,489 B) and the
+  footer ships `public/brand/sum-logo-dark.avif` (400×196, 14,033 B). Both are
+  trimmed to their artwork — the untrimmed masters carry transparent padding,
+  which is why the aspect ratios differ from their masters. Both call sites
+  pass `unoptimized` on purpose; see the comment at each.
 - `app/icon.png` was 800×800 (41 KB) until Sprint 6F — Next serves these
   files as-is and never resizes them, so a favicon slot was being paid for
   at full artwork resolution. It is now 32×32 (3.7 KB); `app/apple-icon.png`
@@ -339,8 +360,17 @@ deliberately cut — handwriting fights the cartographic register.
   `public/brand/icon-source.png` (800×800) and
   `public/brand/apple-icon-source.png`. Re-cut from those, never from the
   32px file, and do not delete them.
-- `public/images/sumadv-icon.png` and `sumadv-logo.png` are the older, lower-
-  resolution supplied versions. Nothing references them since Sprint 6C.
+- **Logo masters — unreferenced by design, do not delete.**
+  `public/sum-logo.png` (800×416, 65,781 B) is the untrimmed master for
+  `public/brand/sum-logo.avif`, and `public/brand/sum-logo-dark.png`
+  (966×585, 100,508 B) is the untrimmed master for
+  `public/brand/sum-logo-dark.avif`. Neither is referenced from code and
+  neither should be — they are the re-cut sources, exactly as
+  `brand/icon-source.png` is for the favicon. Re-cut from these, never from
+  a shipped AVIF.
+  (An earlier note here named `public/images/sumadv-icon.png` and
+  `sumadv-logo.png`. Neither file exists in the repo; the note was stale and
+  has been removed.)
 
 ## Verification before any commit
 
@@ -372,14 +402,15 @@ ticked off from a local build. Items waiting on the client are below.
   `footprints-3.jpeg`); footprints-2 is the Tsikoane section background as of
   Sprint 7. Still outstanding: plateau summit, bonfire, Basotho meal.
 - Mpho Noko portrait (initials placeholder in `Hlotse.tsx`)
-- **Knockout / reversed logo variant — expected this week, and the footer is
-  waiting on it.** `public/sum-logo.png` is a teal mark with a dark-grey
-  wordmark on white: on `surface-dark` the grey tagline disappears and the
-  white ground shows as a hard rectangle. Until the variant arrives the footer
-  renders the wordmark "SUM ADVENTURES" in white display type and no mark, with
-  a TODO naming the asset. **Do not invert, recolour, filter or knock out the
-  existing PNG as a stand-in** — a recoloured brand mark is an invented asset.
-- Vector logo `.svg` (the masthead currently ships the raster PNG)
+- ~~**Knockout / reversed logo variant.**~~ **Supplied and landed, Sprint 6I.**
+  The footer renders `public/brand/sum-logo-dark.avif` — client-supplied,
+  transparent background, all four corners alpha 0, so it sits on
+  `surface-dark` with no white plate. The text wordmark and the TODO it was
+  waiting on are both gone. The standing rule survives the item: **do not
+  invert, recolour, filter or knock out a mark as a stand-in** — a recoloured
+  brand mark is an invented asset.
+- Vector logo `.svg` — still outstanding. The masthead ships raster AVIF
+  (`brand/sum-logo.avif`), not the PNG it once did.
 - Confirmation that *minowane* is the customer-facing term
 - Tagline conflict: logo says "Travel is adventure having fun", profile and all
   flyers say "More Than Just A Trip". Site uses the latter.
@@ -404,10 +435,14 @@ because these were mistaken for done more than once while they were not.
   never touched.~~ **Superseded and landed.** That recolour never happened and
   is now moot: the direction reversed, and the site takes its palette *from*
   the client's teal mark rather than recolouring the mark to match the site.
-  `Masthead.tsx` was rebuilt around `public/sum-logo.png`.
-- **Favicon.** ~~The site shipped none.~~ **Landed.** `app/icon.png` (800×800,
-  the supplied artwork unmodified) and `app/apple-icon.png` (180×180, resized
-  from it). The App Router emits `<link rel="icon">` and
+  `Masthead.tsx` was rebuilt around the client's mark — at the time
+  `public/sum-logo.png`, and since Sprint 6I the trimmed
+  `public/brand/sum-logo.avif`.
+- **Favicon.** ~~The site shipped none.~~ **Landed.** `app/icon.png` and
+  `app/apple-icon.png` (180×180, resized from the same source). `icon.png`
+  shipped at 800×800 originally and **is 32×32 (3,678 B) as of Sprint 6F** —
+  see the resize note under Conventions, which is the authoritative
+  description. The App Router emits `<link rel="icon">` and
   `<link rel="apple-touch-icon">`; verified served at `/icon.png` and
   `/apple-icon.png`. There is still no `manifest.json` — nothing needs one yet.
 
