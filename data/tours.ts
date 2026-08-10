@@ -22,7 +22,33 @@ export type Tour = {
    * button, no WhatsApp link. See CLAUDE.md and docs/client-profile.md.
    */
   status: "upcoming" | "past";
+  /**
+   * Customer-facing availability line, rendered verbatim next to the price.
+   *
+   * **This is not a date field and must never become one.** It carries no
+   * value a date can be parsed out of, and nothing infers bookability from
+   * it — `status` remains the only source of truth for that (CLAUDE.md
+   * invariant 8). It exists because "when does this run?" is the first
+   * question a seasonal product raises, and leaving it unanswered invites
+   * the reader to assume the flyer date still stands.
+   *
+   * Set it only from what the client has actually said. Do not write a month
+   * range, a season window or a snow-condition claim into it: the site does
+   * not know when the Afriski season opens or closes, and that question is
+   * still outstanding with Mpho.
+   */
+  availability?: string;
 };
+
+/**
+ * The one seasonal-availability string, defined once so the two render sites
+ * — the homepage card and the tour detail panel — cannot drift apart.
+ *
+ * The separator is U+00B7 MIDDLE DOT, matching every other `·` on the site.
+ * It says what is known (the trip is seasonal, dates are agreed per enquiry)
+ * and claims nothing that is not: no months, no season window, no snow.
+ */
+export const SEASONAL_AVAILABILITY = "Seasonal · departure dates on enquiry";
 
 export const tours: Tour[] = [
   {
@@ -39,6 +65,12 @@ export const tours: Tour[] = [
     image: "/images/skii-3.jpg",
     imageAlt: "Visitors in the snow at Afriski, Lesotho",
     status: "upcoming",
+    // The one flyer this was priced off carried a single Saturday date, which
+    // lapsed and briefly took the tour to `status: "past"` in Sprint 4.5. The
+    // client's position since Sprint 5.5 is that it is a standing activity
+    // with dates agreed per enquiry, so the page now says exactly that rather
+    // than leaving the reader to guess. Sprint 9.
+    availability: SEASONAL_AVAILABILITY,
   },
   {
     slug: "tsikoane-plateau-camping",

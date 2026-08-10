@@ -63,6 +63,13 @@ export function TourGrid() {
                     Enquire →
                   </a>
                 </div>
+                {/* Availability leads this stack: for a seasonal trip it is
+                    the thing a reader wants before the fine print. */}
+                {tour.availability && (
+                  <p className="mt-2.5 font-mono text-[10.5px] tracking-[0.06em] text-[#586A67]">
+                    {tour.availability}
+                  </p>
+                )}
                 {tour.minPax && (
                   <p className="mt-2.5 font-mono text-[10.5px] tracking-[0.06em] text-[#586A67]">
                     Minimum {tour.minPax} people

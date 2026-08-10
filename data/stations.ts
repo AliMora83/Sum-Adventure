@@ -50,13 +50,14 @@ export const stations: Station[] = [
  * — reviewing it there is the entire point of carrying it. Hence scope
  * "production": preview must keep rendering it, visibly unconfirmed.
  *
- * Keyed on VERCEL_ENV, not on NEXT_PUBLIC_SITE_URL. The original check fired
- * whenever the site URL was non-localhost, which is true of every preview
- * deploy, so it broke exactly the builds that are supposed to show the
- * provisional value. NEXT_PUBLIC_SITE_URL is now a canonical origin shared
- * by every environment (see lib/site.ts) and says nothing about which
- * environment is building; VERCEL_ENV is the signal that separates a
- * production deploy from a preview one.
+ * Keyed on CONTEXT — Netlify's build context — not on NEXT_PUBLIC_SITE_URL.
+ * The original check fired whenever the site URL was non-localhost, which is
+ * true of every preview deploy, so it broke exactly the builds that are
+ * supposed to show the provisional value. NEXT_PUBLIC_SITE_URL is a canonical
+ * origin shared by every environment (see lib/site.ts) and says nothing about
+ * which environment is building; CONTEXT is the signal that separates a
+ * production deploy from a preview one. It was VERCEL_ENV until Sprint 9,
+ * which is unset on Netlify and left this guard unable to fire at all.
  *
  * The throwing mechanism itself now lives in lib/provisional.ts, shared with
  * the JSON-LD guard in data/organization.ts. Behaviour here is unchanged.

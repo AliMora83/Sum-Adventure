@@ -10,11 +10,15 @@
 # next.config.ts, so `next build` never writes an out/ directory.
 #
 # NODE_VERSION is pinned rather than left to Netlify's default so the build
-# image matches the version this repo is developed and verified against.
+# image is a known quantity. It is "22" — the active LTS line, and a version
+# Netlify's build images actually carry. Sprint 8 pinned it to "25" to match
+# the local toolchain; 25 is a current, odd-numbered, non-LTS release and is
+# not a safe assumption about a hosted build image. Local Node may run ahead
+# of this; the deploy target is what this value is for.
 
 [build]
   command = "npm run build"
   publish = ".next"
 
 [build.environment]
-  NODE_VERSION = "25"
+  NODE_VERSION = "22"

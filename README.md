@@ -217,16 +217,21 @@ overlaps without JS. Reasoning in CLAUDE.md.
 | 5 | Data-driven rail, provisional elevation + guard | Done |
 | 6 | Metadata, sitemap, robots, X-Robots-Tag, past-tour handling | Done |
 | 7 | Confirmed elevation, client images, docs reconciliation | Done |
-| — | Vercel setup + first production deploy | Parked, see below |
+| 8 | Netlify migration: discovery, `netlify.toml` | Done |
+| 9 | Afriski seasonal, `CONTEXT` guards, hostname indexability | Done |
+| — | Netlify setup + first production deploy | Not yet done, see below |
 
 Deferred to phase 2: blog, events, gallery, standalone destinations,
 testimonials page, photography portfolio, tour calendar, downloadable
 itineraries, CMS.
 
-**Deployment is parked until next week by decision, not oversight.** Nothing
-in this repo has ever been deployed, no preview URL is recorded anywhere, and
-three launch-checklist items cannot be verified until that changes. See
-`docs/launch-checklist.md`.
+**Deploy target is Netlify.** Vercel was cancelled in Sprint 8; `netlify.toml`
+is in the repo root and every environment check moved from `VERCEL_ENV` to
+Netlify's `CONTEXT` in Sprint 9. **Nothing in this repo has ever been
+deployed**, no deploy URL is recorded anywhere, and the launch-checklist items
+cannot be verified until that changes. See `docs/launch-checklist.md` — note
+in particular that `ALLOW_PROVISIONAL_DEPLOY` must be absent from the Netlify
+environment before any deploy on the real domain.
 
 ## Notes
 

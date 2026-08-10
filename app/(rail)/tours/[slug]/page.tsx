@@ -122,6 +122,14 @@ export default async function TourDetailPage({ params }: Props) {
                 <div className="mt-2.5 font-mono text-[11.5px] uppercase tracking-[0.16em] text-[#586A67]">
                   per person · {tour.duration}
                 </div>
+                {/* Only on the bookable panel. The past-tour panel already
+                    says "This trip has already run", and an availability line
+                    under that would contradict it. */}
+                {tour.availability && (
+                  <p className="mt-2 font-mono text-[11.5px] tracking-[0.03em] text-teal-deep">
+                    {tour.availability}
+                  </p>
+                )}
                 {tour.priceNote && (
                   <p className="mt-2 font-mono text-[11.5px] tracking-[0.03em] text-[#586A67]">
                     {tour.priceNote}

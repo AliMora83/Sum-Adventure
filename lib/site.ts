@@ -4,11 +4,12 @@ import type { Metadata } from "next";
  * Canonical site origin, for metadataBase and for resolving relative OG image
  * URLs to absolute ones.
  *
- * There is deliberately **no VERCEL_URL fallback**. VERCEL_URL is unique per
- * deployment, so OG image URLs would change on every push — every preview
- * already scraped by WhatsApp, Facebook or a search engine would keep
- * pointing at a dead deployment. One canonical origin per environment is the
- * whole point of the value.
+ * There is deliberately **no fallback to the platform's own deploy URL**
+ * (Netlify's DEPLOY_URL / DEPLOY_PRIME_URL, as it was Vercel's VERCEL_URL
+ * before Sprint 9). Those values are unique per deployment, so OG image URLs
+ * would change on every push — every preview already scraped by WhatsApp,
+ * Facebook or a search engine would keep pointing at a dead deployment. One
+ * canonical origin per environment is the whole point of the value.
  *
  * An unset value is a hard failure rather than a silent fallback because the
  * failure mode is invisible: Next emits *relative* Open Graph paths, no
@@ -23,7 +24,7 @@ if (!configuredSiteUrl) {
       "metadataBase — without it Next silently emits relative Open Graph " +
       "paths that no scraper can resolve. Set it to the canonical origin " +
       "for this environment: http://localhost:3000 for local dev, the " +
-      ".vercel.app alias for staging, the client's domain for production. " +
+      "Netlify deploy URL for staging, the client's domain for production. " +
       "See .env.example."
   );
 }

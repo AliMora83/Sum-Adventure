@@ -140,17 +140,21 @@ flips to `past` only on the client's actual instruction. See CLAUDE.md
 invariant 8, and `docs/launch-checklist.md` for the manual-step risk this
 creates.
 
-**Scheduled flip: 31 August 2026.** This tour is to be set to
-`status: "past"` on that date. Owner: Ali. A single dated action requiring a
-repo edit and a redeploy — not a recurring review, and not something the site
-does on its own. See `docs/launch-checklist.md`.
+**~~Scheduled flip: 31 August 2026.~~ WITHDRAWN, Sprint 9.** This tour was to
+be set to `status: "past"` on that date, owner Ali. Do not act on it.
 
-Note the two are in tension and neither is settled here: the
-"standing, always-available activity" framing above is still **[UNCONFIRMED]**
-by Mpho, and a standing activity would not normally carry a flip date at all.
-Both facts are recorded as they stand. Confirming the framing with Mpho may
-change whether the 31 August flip should happen; do not treat either as
-resolved.
+The tension that note recorded — a standing activity would not normally carry
+a flip date at all — is what resolved it. Sprint 9 put the standing framing on
+the page itself: the tour renders `Seasonal · departure dates on enquiry`
+(`availability` in `data/tours.ts`). A trip that states dates are agreed per
+enquiry does not go stale on a calendar date, so the flip had nothing left to
+correct, and flipping it would now contradict the client's own instruction.
+
+What is **not** resolved: the "standing, always-available activity" framing is
+still **[UNCONFIRMED]** by Mpho. The seasonal line is deliberately true under
+either answer, so the site asserts nothing that a "one-off" reply would
+falsify — but the confirmation is still worth getting, as is the season close
+date. See `docs/Client-ToDo.md` items 7 and 8.
 
 ### Educational tours
 

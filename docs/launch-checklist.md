@@ -10,14 +10,19 @@ the deploy it describes.
 
 ---
 
-## Vercel setup and deployment are PARKED until next week
+## Deployment: Vercel cancelled, Netlify not yet connected
 
-**By decision, not oversight.** Recorded here so nobody re-derives it as an
-open task or treats the unverified items below as newly discovered.
+**Superseded Sprint 8.** This section previously read "Vercel setup and
+deployment are PARKED until next week". Vercel was cancelled outright; the
+target is Netlify. `netlify.toml` is in the repo root (build command, publish
+directory, `NODE_VERSION = "22"`) and Sprint 9 moved every environment check
+in the codebase from `VERCEL_ENV` to Netlify's `CONTEXT`.
 
-The consequence is that **no deployment of this project exists**. Not
-production, not preview, not staging. Nothing in this repo has ever been
-built by Vercel or served from anywhere other than localhost.
+**The park is over but the state it described is not.** No deployment of this
+project exists. Not production, not preview, not staging. Nothing in this repo
+has ever been built by any hosted platform or served from anywhere other than
+localhost, so every UNVERIFIED item below is still unverified for exactly the
+reason it always was.
 
 **No preview URL, deploy alias or hostname is recorded anywhere in this
 repo, and none may be invented to stand in for one.** Until a real
@@ -38,7 +43,7 @@ and is unset everywhere else, because there is nowhere else yet.
 
 All three items in this section were previously blocked on the Tsikoane
 elevation. **That dependency is gone** — the client confirmed 1,881 m in
-Sprint 7, the `provisional` flag is deleted and `VERCEL_ENV=production`
+Sprint 7, the `provisional` flag is deleted and `CONTEXT=production`
 builds now succeed (verified locally: exit 0, and still exit 1 when a station
 is flagged).
 
@@ -52,15 +57,17 @@ aborts" to "there is nowhere to check them".
 **Status: UNVERIFIED. Do not mark verified before a real production deploy.**
 **Blocked on: a connected deployment.**
 
-`app/robots.ts` returns `allow: /` plus a sitemap reference when
-`VERCEL_ENV === "production"`, and `disallow: /` otherwise.
+`app/robots.ts` returns `allow: /` plus a sitemap reference only when
+`isIndexableBuild()` is true — `CONTEXT === "production"` **and** the
+`NEXT_PUBLIC_SITE_URL` hostname does not end in `.netlify.app` (Sprint 9,
+`lib/indexable.ts`). It returns `disallow: /` otherwise.
 
 The `disallow` branch is genuinely verified — curled over HTTP from
 `next start` in Sprint 6b, returning `User-Agent: *` / `Disallow: /`.
 
 The production branch is **not**. No production `robots.txt` has ever been
 generated. Until Sprint 7 that was because the provisional-elevation guard in
-`data/stations.ts` aborted every `VERCEL_ENV=production` build; that guard now
+`data/stations.ts` aborted every production-context build; that guard now
 passes, and the reason is simply that no deployment exists to build it. The
 only evaluation of that branch ever made called the function directly, outside
 Next, **with a fabricated production hostname** — see invariant 9. Neither a
@@ -72,8 +79,12 @@ What that leaves unproven, specifically:
 - that a production build emits `robots.txt` at all
 - that the sitemap URL in it resolves against the real `NEXT_PUBLIC_SITE_URL`
 - that `allow: /` is what actually ships, rather than the `disallow` branch
-  reached via a `VERCEL_ENV` that is unset or unexpected in the real
-  production environment
+  reached via a `CONTEXT` that is unset or unexpected in the real production
+  environment
+- that the production `NEXT_PUBLIC_SITE_URL` is the client's own domain and
+  not the `<name>.netlify.app` address. On a Netlify host the `disallow`
+  branch is taken **by design**, and a site left on its Netlify subdomain
+  will therefore never be indexable no matter what `CONTEXT` says
 
 On the first production build, fetch `/robots.txt` from the live origin and
 confirm the body allows crawling and names the correct sitemap URL. Confirm
@@ -84,12 +95,37 @@ though the code is believed correct.
 
 **Status: UNVERIFIED. Blocked on: a connected deployment.**
 
-Same shape, same caveat. `next.config.ts` drops the `noindex` header only when
-`VERCEL_ENV === "production"`. The header's presence on non-production was
-curled and confirmed in Sprint 6a; its **absence** in production has never
-been observed on a real deploy. Check response headers on the live origin —
-a stray `X-Robots-Tag: noindex` in production would deindex the entire site
-silently.
+Same shape, same caveat, but the condition changed in Sprint 9 and the check
+is now a two-part one.
+
+`next.config.ts` drops the `noindex` header only when `isIndexableBuild()` is
+true (`lib/indexable.ts`), which requires **both**:
+
+1. `CONTEXT === "production"` — Netlify's build context, and
+2. the `NEXT_PUBLIC_SITE_URL` hostname does **not** end in `.netlify.app`.
+
+Context alone is not sufficient and that is the point. Netlify sets
+`CONTEXT=production` on the production branch of a site whose only address is
+still `<name>.netlify.app` — which is exactly this project's state the day it
+is first connected. Keying on context alone would publish an indexable
+Netlify subdomain and the client's real domain would later launch into
+duplicate content against it.
+
+Both branches were exercised locally in Sprint 9 against a real `next build`
+plus `next start`, using declared stand-in hostnames (`example.netlify.app`
+and `example.invalid` — reserved-for-testing values, not real config, see
+invariant 9):
+
+| `NEXT_PUBLIC_SITE_URL` host | `X-Robots-Tag` | `robots.txt` |
+| --- | --- | --- |
+| `example.netlify.app` | `noindex` | `Disallow: /` |
+| `example.invalid` | *absent* | `Allow: /` + sitemap |
+
+**That is still not verification.** It proves the logic, not the deployment.
+Both runs used stand-in hostnames and a local server. What remains unobserved
+is the real production origin: check response headers on the live domain and
+confirm `X-Robots-Tag` is **absent**. A stray `X-Robots-Tag: noindex` in
+production would deindex the entire site silently.
 
 ---
 
@@ -142,31 +178,98 @@ Two consequences worth knowing:
 - Only the client can authorise the flip. Do not set it from a lapsed flyer
   date — that is the exact inference Sprint 5.5 reversed.
 
-**The scheduled flip.** Afriski Winter Day Trip is flipped to
-`status: "past"` on 31 August 2026. Owner: Ali. This is a single dated
-action, not a recurring review. It requires a repo edit and a redeploy, so
-it cannot be delegated to Mpho.
+### ~~The scheduled 31 August 2026 flip~~ — WITHDRAWN, Sprint 9
 
-Scheduling it **assigns** the control; it does not **add** one. Everything
-above still holds — there is no date field, no date filtering, no job, no
-prompt, no warning and no build failure. Nothing in the codebase knows about
-31 August 2026. If the date passes and nobody makes the edit, the site keeps
-presenting the tour as bookable, exactly as described above. The date is a
-calendar commitment held by a person, and that person is the only mechanism.
+Afriski Winter Day Trip was to be set to `status: "past"` on 31 August 2026.
+Owner: Ali. **That commitment is withdrawn and nobody should act on it.**
+
+It is withdrawn because Sprint 9 made the tour's availability explicit on the
+page: it now renders `Seasonal · departure dates on enquiry`
+(`availability` on the tour, `data/tours.ts`). The flip existed to stop the
+site presenting a lapsed one-off departure as bookable. A trip that states on
+its face that dates are agreed per enquiry does not go stale on a calendar
+date, so there is nothing left for the flip to correct — and flipping it to
+`past` would now be a *worse* description than leaving it alone, because the
+client's position since Sprint 5.5 is that this is a standing activity.
+
+Note what has **not** changed: the flip was never implemented in code. There
+was no job, no date field and nothing in the codebase that knew about 31
+August 2026 — it was a calendar commitment held by a person. Withdrawing it
+removes that commitment; it does not remove a mechanism, because there was
+none.
+
+Everything above this heading still holds in full. `status` is still the only
+source of truth, it still only moves by hand, and it still only moves on the
+client's actual instruction. If Mpho says the season has closed, set it then.
+
+The open question this leaves is unchanged and still with the client: **when
+does the Afriski season close?** The seasonal line answers "when does it
+run?" with "ask us", which is honest and is what the client asked for. It is
+not a substitute for knowing the answer.
 
 ## Required configuration
+
+### `ALLOW_PROVISIONAL_DEPLOY` must be deleted from Netlify — LAUNCH BLOCKING
+
+**Status: BLOCKING for launch. Owner: Ali. Verify in the Netlify UI, not
+from a build log.**
+
+`ALLOW_PROVISIONAL_DEPLOY=1` disarms every provisional-data guard in the
+project (`lib/provisional.ts`, Sprint 9). It downgrades a build failure to a
+console warning and lets the build through. It exists for one purpose — a
+throwaway preview of unrelated work while placeholder data is still
+outstanding — and it must not be set on any deploy that serves the client's
+real domain.
+
+**If it is set at launch, these ten fabricated values are published**, about a
+real registered company, with no build failure to catch it:
+
+`data/organization.ts` — reaches the live JSON-LD, which search engines may
+surface as fact in a result card:
+
+1. `url = "https://example.invalid"`
+2. `streetAddress = "PLACEHOLDER — awaiting client"`
+3. `addressLocality = "PLACEHOLDER — awaiting client"`
+4. `openingHours = "PLACEHOLDER — awaiting client"`
+5. `sameAs = ["https://example.invalid/placeholder-social"]`
+
+`data/passes.ts` — held off the page by the render filter in
+`components/sections/Tsikoane.tsx`; the guard is the backstop for that filter
+being deleted:
+
+6. `pass 02 = "Pass two" (name tbc)`
+7. `pass 03 = "Pass three" (name tbc)`
+8. `pass 04 = "Pass four" (name tbc)`
+9. `pass 05 = "Pass five" (name tbc)`
+10. `pass 06 = "Pass six" (name tbc)`
+
+The variable fails closed — only the exact string `1` disarms the guards, so
+a typo leaves them armed. That protects against accidents, not against
+someone setting it deliberately and forgetting. **Deleting the variable is
+the check; a passing build proves nothing**, because a bypassed build passes
+by design. The warning banner it prints is loud, but a deploy log nobody
+reads is not a control.
+
+The real fix is upstream of this variable: get the five organisation fields
+from Mpho and the five pass names, at which point the guards pass on their
+own and the bypass has nothing to bypass. See `docs/Client-ToDo.md`.
 
 ### `NEXT_PUBLIC_SITE_URL` must be set per environment
 
 The build **fails** without it (`lib/site.ts`), deliberately — an unset value
 used to mean silently emitting relative OG paths no scraper can resolve.
 
-Set it in the Vercel project per environment, each to that environment's own
-stable origin: the client's domain for production, the deploy's own alias for
-preview/staging. Never to a per-deployment URL, and never to a guessed or
-placeholder hostname — this value is the root of `metadataBase`, so it becomes
-every canonical link, every OG image URL and the `sitemap.xml` origin at once.
-Nothing downstream validates it.
+Set it in the Netlify site's environment variables per context, each to that
+context's own stable origin: the client's domain for production, the deploy's
+own stable URL for branch deploys. Never to a per-deployment URL, and never to
+a guessed or placeholder hostname — this value is the root of `metadataBase`,
+so it becomes every canonical link, every OG image URL and the `sitemap.xml`
+origin at once. Nothing downstream validates it.
+
+As of Sprint 9 it carries a second job: its hostname decides indexability
+(`lib/indexable.ts`). Leaving production pointed at `<name>.netlify.app`
+keeps the whole site `noindex`, deliberately. That is the safe failure
+direction, but it is also silent — see the `X-Robots-Tag` item above.
 
 Currently set only in local `.env.local`, to `http://localhost:3000`. The real
 values do not exist yet and must not be guessed; this is a blocker to record,
@@ -177,9 +280,10 @@ not a gap to fill.
 The client supplied the Tsikoane plateau elevation (1,881 m) and the
 `provisional` flag was deleted, so the guard in `data/stations.ts` no longer
 aborts production builds. Confirmed against a real production-condition
-build rather than by reading the code: `VERCEL_ENV=production npm run build`
-exits 0 as the data now stands, and still exits 1 with the guard's own error
-when a station is deliberately flagged.
+build rather than by reading the code: a production-context build exits 0 as
+the data now stands, and still exits 1 with the guard's own error when a
+station is deliberately flagged. (That check read `VERCEL_ENV=production` at
+the time; the equivalent today is `CONTEXT=production`.)
 
 The guard itself stays in place as a no-op — that is its correct resting
 state, not dead code. See CLAUDE.md invariant 5.
@@ -268,9 +372,11 @@ confirmed. See "Outstanding from the client" in `CLAUDE.md`.
    in a server-only SSR chunk, never in a client bundle, prerendered HTML or an
    RSC payload.
 2. `data/passes.ts` calls `assertNoProvisional` at scope `any-deploy`, so any
-   build with `VERCEL_ENV` set to anything but `development` aborts while an
-   unconfirmed pass remains. Verified by building, not by reading: preview
-   exits 1 naming all five.
+   build with `CONTEXT` set to anything but `dev` aborts while an unconfirmed
+   pass remains. Verified by building, not by reading: preview exits 1 naming
+   all five. Re-verified under `CONTEXT` in Sprint 9, and under the bypass —
+   with `ALLOW_PROVISIONAL_DEPLOY=1` the build passes and all five are named
+   in the warning banner instead.
 
 The section already tells the reader the count is six and that five names are
 to come, so nothing on the page is wrong or misleading in the meantime — it is
@@ -374,25 +480,35 @@ project exists; no real hostname is recorded anywhere in this repo, and none is
 invented here. Where a hostname is needed below it is `example.invalid`, a
 reserved non-resolving TLD, **and it is a stand-in, not configuration.**
 
-**Production `robots.txt`.** `app/robots.ts:26` branches on
-`VERCEL_ENV === "production"`. Locally the non-production branch is confirmed:
-`GET /robots.txt` off `next start` returns `User-Agent: *` / `Disallow: /`. The
-production branch cannot be reached locally in any meaningful sense — setting
-`VERCEL_ENV=production` by hand exercises the branch but resolves the sitemap
-against `NEXT_PUBLIC_SITE_URL`, which is `http://localhost:3000` here, so the
-output would assert a localhost sitemap and prove nothing about production. To
-verify: deploy to production, `curl https://<real-domain>/robots.txt`, confirm
-`Allow: /` and that the `Sitemap:` line names the real origin, then confirm
-`/sitemap.xml` lists that same origin. Requires a real deployed hostname.
+**Production `robots.txt`.** `app/robots.ts` branches on `isIndexableBuild()`
+(`CONTEXT === "production"` **and** a non-`.netlify.app` hostname) as of
+Sprint 9. Locally the non-indexable branch is confirmed: `GET /robots.txt` off
+`next start` returns `User-Agent: *` / `Disallow: /`.
 
-**Absence of `X-Robots-Tag` in production.** `next.config.ts:36` returns no
-headers when `VERCEL_ENV === "production"`. Presence on non-production is
-confirmed locally — `curl -D -` off `next start` shows `X-Robots-Tag: noindex`.
-**Absence cannot be verified locally at all**: a local build has `VERCEL_ENV`
-unset, which is the non-production branch by definition. To verify: `curl -I`
-the live production origin and confirm no `X-Robots-Tag` is present on an HTML
-response. Requires a real deployed hostname. This is the higher-risk of the
-two — a stray `noindex` in production deindexes the entire site silently.
+Sprint 9 also drove the indexable branch locally, with `CONTEXT=production`
+and `NEXT_PUBLIC_SITE_URL=https://example.invalid` (a stand-in, not
+configuration): the body came back `Allow: /` with
+`Sitemap: https://example.invalid/sitemap.xml`. **That still proves only the
+branch, not the deployment** — the origin is a non-resolving stand-in and the
+server was local. To verify: deploy to production, `curl
+https://<real-domain>/robots.txt`, confirm `Allow: /` and that the `Sitemap:`
+line names the real origin, then confirm `/sitemap.xml` lists that same
+origin. Requires a real deployed hostname.
+
+**Absence of `X-Robots-Tag` in production.** `next.config.ts` returns no
+headers when `isIndexableBuild()` is true. Presence on a non-indexable build
+is confirmed locally — `curl -D -` off `next start` shows
+`X-Robots-Tag: noindex`, including with `CONTEXT=production` when the host is
+`example.netlify.app`, which is the case the hostname half of the rule exists
+for. Absence was also observed locally on a non-Netlify stand-in host.
+
+**Neither local run is verification of production.** Both used stand-in
+hostnames against a local server; what has never been observed is the real
+origin. To verify: `curl -I` the live production origin and confirm no
+`X-Robots-Tag` is present on an HTML response. Requires a real deployed
+hostname. This is the higher-risk of the two — a stray `noindex` in production
+deindexes the entire site silently, and the new hostname condition adds a
+second way to arrive at it: production still pointed at `.netlify.app`.
 
 ## D4 — Orphans and dead paths
 

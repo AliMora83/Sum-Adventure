@@ -47,7 +47,9 @@ anywhere in this repo and none may be invented** (CLAUDE.md invariant 9).
 **Blocks four things at once**, which is why this is the highest-leverage item
 in the meeting:
 
-- Vercel production deployment
+- Netlify production deployment (and, since Sprint 9, indexability itself —
+  the hostname decides it: a site left on `<name>.netlify.app` stays
+  `noindex` by design)
 - `robots.txt` production verification (see the risk note below)
 - `X-Robots-Tag` production verification (see the risk note below)
 - OG metadata origin — `NEXT_PUBLIC_SITE_URL` is the root of `metadataBase`,
@@ -59,23 +61,45 @@ in the meeting:
 **Ask:** does the client own a domain already, and who holds the registrar
 login. If it does not exist yet, that purchase is the long pole.
 
-### 3. JSON-LD business details — NOT SUPPLIED
+### 3. JSON-LD business details — NOT SUPPLIED — **HARD LAUNCH GATE**
 
-Four values, all currently placeholders in `data/organization.ts`:
+**These five fields are a hard gate on launch, not a content nicety.** The
+site cannot go live on the client's domain until they are supplied. This is
+the single most launch-critical item on the list after the domain itself.
 
-- **Registered legal name** — we have "Sum Adventures (Pty) Ltd" from the
-  profile; the **registration number** is `[UNCONFIRMED]`
-- **Physical address** — street and locality both `[UNCONFIRMED]`. Only
-  `addressCountry: "LS"` is derivable, from the +266 phone number.
-- **Operating hours** — `[UNCONFIRMED]`
-- **Social handles** — `[UNCONFIRMED]`
+Five values, all currently placeholders in `data/organization.ts`:
 
-**Why this one is hard-blocking rather than cosmetic:** the guard in
-`data/organization.ts` runs at scope `any-deploy` and **throws on any build
-where `VERCEL_ENV` is set** — production *and* preview. Until these four land,
-the project cannot be deployed anywhere at all, only built locally. That is
-deliberate: JSON-LD is a machine-readable claim about a real registered
-company, submitted to search engines, which may surface it as fact.
+1. **`url`** — the canonical business URL. Currently `https://example.invalid`,
+   a reserved non-resolving stand-in.
+2. **`streetAddress`** — `[UNCONFIRMED]`. Only `addressCountry: "LS"` is
+   derivable, from the +266 phone number.
+3. **`addressLocality`** — `[UNCONFIRMED]`
+4. **`openingHours`** — `[UNCONFIRMED]`
+5. **`sameAs`** — social handles, `[UNCONFIRMED]`
+
+(The **registration number** is separately `[UNCONFIRMED]`. We have the legal
+name "Sum Adventures (Pty) Ltd" from the profile and it is not a placeholder;
+the number is not currently in the markup and does not gate the build.)
+
+**Why this is hard-blocking rather than cosmetic.** JSON-LD is a
+machine-readable claim about a real registered company, submitted to search
+engines, which may surface it as fact in a result card. A wrong address is
+not a typo — it is a business sending customers to the wrong place. So the
+guard in `data/organization.ts` runs at scope `any-deploy` and **throws on
+any build where `CONTEXT` is set** — production, deploy-preview and
+branch-deploy alike. Until these five land, the project can only be built
+locally.
+
+**The gate has an override, and that override is itself a launch blocker.**
+`ALLOW_PROVISIONAL_DEPLOY=1` downgrades the guard to a warning and lets the
+build through with all five placeholders intact. It exists for a throwaway
+preview of unrelated work. If it is left set on the Netlify environment at
+launch, these five fabricated values are published about a real company with
+nothing to catch it. Deleting it before any deploy on the real domain is a
+LAUNCH BLOCKING item in `docs/launch-checklist.md`.
+
+Read that together: **the only clean way through this gate is the client's
+actual data.** Anything else is either a failed build or a bypassed one.
 
 **Ask:** the registration certificate, the trading address, opening hours, and
 the Facebook/Instagram URLs. Do not accept approximations — a plausible wrong
@@ -133,7 +157,12 @@ Sprint 5.5, but `docs/client-profile.md:149` still marks it `[UNCONFIRMED]`.
 The underlying question: did the 25 July 2026 flyer describe a one-off
 departure, or does the trip repeat?
 
-**Blocks:** whether the 31 August 2026 status flip should happen at all.
+**Blocks:** nothing, as of Sprint 9. The page now says
+`Seasonal · departure dates on enquiry`, which is accurate whether the trip
+repeats or not, so the site no longer asserts anything a "one-off" answer
+would falsify. The 31 August 2026 status flip this used to block is
+withdrawn — see `docs/launch-checklist.md`. Still worth confirming; no longer
+holding anything up.
 
 **Ask:** confirm or correct the standing-activity framing in one sentence.
 
@@ -141,13 +170,17 @@ departure, or does the trip repeat?
 
 **Why:** nothing in the codebase knows about any date. There is no date field
 on `Tour`, no date filtering, no scheduled job and no build failure — a tour
-goes past only when a human edits `status` by hand.
+goes past only when a human edits `status` by hand. The `availability` line
+added in Sprint 9 is copy, not a schedule: nothing parses it and nothing
+branches on it.
 
-**Blocks:** the 31 August 2026 flip, which is a calendar commitment held by a
-person (Ali) and nothing else. If the season actually closes on a different
-date, that commitment is wrong. If the date passes and nobody makes the edit,
-the site keeps presenting the trip as bookable with a live price and a
-WhatsApp booking link, indefinitely and silently.
+**Blocks:** nothing mechanical any more — the 31 August 2026 flip this used
+to block is withdrawn. What remains is a plain content gap: the site tells a
+customer to ask when the trip runs, because we genuinely do not know. That is
+honest and it is what the client asked for, but it is not an answer, and
+"when is snow season at Afriski?" is the first question a buyer asks. Do not
+close this gap by writing a month range into `availability` — that would be
+inventing the answer rather than getting it.
 
 ---
 
@@ -170,12 +203,21 @@ WhatsApp booking link, indefinitely and silently.
 Flagged separately because it is the one failure that is **both invisible and
 catastrophic**, and it cannot be tested until item 2 lands.
 
-`next.config.ts` serves `X-Robots-Tag: noindex` on every environment *except*
-production, to keep staging out of search results. Its **presence** on
-non-production is verified. Its **absence** in production has never been
-observed, and **cannot be** — a local build has `VERCEL_ENV` unset, which is
-the non-production branch by definition. There is no way to test the
-production branch without a real deployed hostname.
+`next.config.ts` serves `X-Robots-Tag: noindex` on every build *except* a real
+production one, to keep staging out of search results. Since Sprint 9 "a real
+production one" means two things at once: `CONTEXT === "production"` **and** a
+canonical hostname that does not end in `.netlify.app`. Its **presence** is
+verified, including on a production-context build still pointed at a Netlify
+host. Its **absence** in production has never been observed on a real deploy
+— every check so far has used a stand-in hostname against a local server.
+There is no way to test the real production branch without a real deployed
+hostname.
+
+The hostname half adds a second route to the same silent failure: a site
+connected to Netlify but still answering on `<name>.netlify.app` stays
+`noindex` by design. That is the safe direction — but if the custom domain is
+attached and `NEXT_PUBLIC_SITE_URL` is not updated with it, the live site
+looks perfect and is invisible to search.
 
 **If that header is wrongly present in production, Google and Bing silently
 deindex the entire site.** No error, no warning, no visible symptom — the site

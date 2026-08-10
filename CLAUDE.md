@@ -145,25 +145,42 @@ below govern any future use of it:
   reached while no station is flagged.
 - Guarded in code, not just by convention: `data/stations.ts` throws at
   build/import time if any station is `provisional: true` while
-  `VERCEL_ENV === "production"`, naming the offending station. This is
+  `CONTEXT === "production"`, naming the offending station. This is
   deliberately a hard failure, not a warning — a warning is exactly what let
   a stray dummy elevation ("3798m") sit unnoticed on the rail marker for
   four sprints.
 - **The guard is a no-op today and that is its correct resting state.** It is
   not dead code. Sprint 7 confirmed it both ways against a real
-  production-condition build: `VERCEL_ENV=production npm run build` exits 0 as
+  production-condition build: `CONTEXT=production npm run build` exits 0 as
   the data now stands, and exits 1 with the guard's own message when a station
   is flagged. Do not delete it because it currently passes.
-- **The guard keys on `VERCEL_ENV`, not `NEXT_PUBLIC_SITE_URL`. Do not
+- **The guard keys on `CONTEXT`, not `NEXT_PUBLIC_SITE_URL`. Do not
   change it back.** Sprint 5 keyed it on "`NEXT_PUBLIC_SITE_URL` is not
   localhost", which sounds equivalent and is not: every preview deploy has a
   non-localhost site URL, so the guard failed precisely the builds where the
   provisional value is *supposed* to be visible for review. As of Sprint 6a
   `NEXT_PUBLIC_SITE_URL` is a single canonical origin shared by all
   environments (invariant below), so it carries no information about which
-  environment is building. `VERCEL_ENV` is the only signal that distinguishes
+  environment is building. `CONTEXT` is the only signal that distinguishes
   production from preview. Preview and local builds must keep rendering the
   provisional value — blocking them is the bug, not the feature.
+- **`CONTEXT` is Netlify's build context and replaced `VERCEL_ENV` in
+  Sprint 9.** This was not a rename. `VERCEL_ENV` is simply unset on Netlify,
+  so between the platform move and Sprint 9 every guard in
+  `lib/provisional.ts` returned false on every deploy and could not fire at
+  all — while the build log looked clean. Netlify's values are `production`,
+  `deploy-preview`, `branch-deploy` and `dev`; unset or `dev` is treated as
+  local. If this project moves platform again, this is the first thing to
+  change.
+- **There is now an escape hatch, and it is a launch blocker.**
+  `ALLOW_PROVISIONAL_DEPLOY=1` downgrades every guard from a build failure to
+  a loud warning naming each offending field (Sprint 9). It fails closed —
+  only the exact string `1` disarms it — and it exists for a throwaway
+  preview, never for the client's domain. Deleting it from the Netlify
+  environment before launch is a LAUNCH BLOCKING item in
+  `docs/launch-checklist.md`, which lists all ten values it would publish.
+  Do not reach for it to clear a build; the flag is not the problem the
+  build is reporting.
 - Consequence, and it is intended: **production builds fail while any station
   is provisional.** Production is meant to be blocked until the client
   supplies the real figure. If a production deploy is failing on this error,
@@ -218,6 +235,34 @@ none should be added back for this reason: nothing about a tour's
 bookability should be inferred from a date. `status` is set explicitly per
 tour and only flips to `past` on the client's actual instruction.
 
+**Sprint 9 put that framing on the page.** The Afriski day trip carries
+`availability: SEASONAL_AVAILABILITY` — the exact string
+`Seasonal · departure dates on enquiry`, separator U+00B7 — rendered next to
+the price in the homepage card and on the tour detail panel. Previously the
+"standing activity" decision existed only in this file and in
+`docs/client-profile.md`, so a reader of the actual page had nothing to go on
+and was free to assume the flyer date still stood.
+
+Two things about `availability` that must not drift:
+
+- **It is not a date field and must never become one.** No value can be
+  parsed out of it and nothing branches on it. `status` remains the sole
+  source of truth for bookability. It is a copy field, not a schedule.
+- **Do not write a month range, season window or snow-condition claim into
+  it.** The site does not know when the Afriski season opens or closes —
+  that question is still outstanding with Mpho. "Dates on enquiry" is the
+  honest answer and it is the one the client asked for.
+
+This withdrew the scheduled 31 August 2026 status flip; see
+`docs/launch-checklist.md`. A trip that says dates are agreed per enquiry
+does not go stale on a calendar date.
+
+Only the Afriski **day trip** carries the line. Sum Ultimate Afriski Weekend
+never had a fixed date attached to it in any source, so nothing was replaced
+there and no seasonality claim was invented for it. If the client says it is
+seasonal too, add the same constant — do not infer it from the fact that
+Afriski has snow.
+
 There **is** JSON-LD on the site as of Sprint 6F — see invariant 1, which
 explains why that block is not a client-component violation. It carries
 **organisation data only**: a `TravelAgency` with a `Person` founder, a
@@ -247,7 +292,7 @@ The rule, in two halves:
 **Why, because the prohibition alone is easy to work around.** Config values
 have a property data values don't: they are *copied*. A number that looks
 plausible gets fact-checked by a customer and caught. A hostname that looks
-plausible gets pasted into a Vercel environment variable, and
+plausible gets pasted into a Netlify environment variable, and
 `NEXT_PUBLIC_SITE_URL` is the root of `metadataBase` — it becomes every
 canonical link, every OG image URL and the `sitemap.xml` origin at once.
 Nothing downstream validates it, because a well-formed URL is exactly what
@@ -415,11 +460,17 @@ ticked off from a local build. Items waiting on the client are below.
 - Tagline conflict: logo says "Travel is adventure having fun", profile and all
   flyers say "More Than Just A Trip". Site uses the latter.
 - Does the Afriski Winter Day Trip repeat, or was 25 July 2026 a one-off
-  departure? The site currently presents it as a standing activity and that
-  framing is unconfirmed. See `docs/client-profile.md` and the 31 August 2026
-  scheduled flip in `docs/launch-checklist.md` — the answer decides whether
-  that flip should happen at all.
-- When does the Afriski season close?
+  departure? Still unconfirmed by Mpho. **Lowered in consequence by Sprint 9,
+  not resolved:** the page now says `Seasonal · departure dates on enquiry`,
+  which is true under either answer, so the site no longer states anything
+  that a "one-off" answer would falsify. The 31 August 2026 scheduled flip
+  that used to hang off this question is withdrawn — see
+  `docs/launch-checklist.md`. Confirming the answer is still worth doing; it
+  is no longer holding anything up.
+- When does the Afriski season close? **Unchanged and still open.** The
+  seasonal line answers "when does it run?" with "ask us", which is honest
+  and is what the client wanted, but it is not the answer. Do not invent a
+  month range or season window in its place.
 
 ### Landed in Sprint 6C — previously "approved but never implemented"
 

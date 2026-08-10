@@ -53,7 +53,7 @@ export const passes: readonly SummitPass[] = [
  * second layer under a one-line render filter; it earns its place only in the
  * world where that filter has been deleted. In that world the placeholders
  * become five fabricated pass names, about a real registered business, in
- * crawlable HTML — and Vercel preview URLs do get discovered and crawled,
+ * crawlable HTML — and preview deploy URLs do get discovered and crawled,
  * which this repo already treats as real (see the `X-Robots-Tag` header in
  * `next.config.ts`). That is the same harm "any-deploy" exists for in
  * `data/organization.ts`, and production-only would let it onto every

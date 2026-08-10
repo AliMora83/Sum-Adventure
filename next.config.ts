@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { isIndexableBuild } from "./lib/indexable";
 
 const nextConfig: NextConfig = {
   // Every page is statically generated. There is no dynamic data on the
@@ -15,25 +16,25 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
 
   /**
-   * Keep every non-production deploy out of search results.
-   *
-   * The staging branch deploys to a public .vercel.app alias — reachable by
-   * anyone, and Vercel preview URLs do get discovered and crawled. A staging
-   * copy of the site competing with the client's real domain would be a
-   * duplicate-content problem on a site whose whole point is being findable.
+   * Keep every build that is not the real production site out of search
+   * results.
    *
    * This is the layer that actually binds. robots.txt (Sprint 6b) is a
    * request a crawler may ignore, and it cannot stop a URL discovered via an
    * inbound link from being indexed without being crawled. X-Robots-Tag is
    * served on the response itself and is honoured by Google and Bing.
    *
-   * Keyed on VERCEL_ENV for the same reason as the provisional-elevation
-   * guard in data/stations.ts: it is the only signal that separates a
-   * production deploy from a preview one. Undefined locally, so `next dev`
-   * and local builds also carry the header — correct, if irrelevant.
+   * The condition lives in lib/indexable.ts and is shared with app/robots.ts
+   * so the header and robots.txt cannot drift apart. It requires **both** a
+   * production context and a non-Netlify canonical hostname: a placeholder or
+   * preview host must never be indexable, and the real domain must never
+   * inherit a stray noindex. See that file for why each half is load-bearing.
+   *
+   * Undefined locally, so `next dev` and local builds also carry the header —
+   * correct, if irrelevant.
    */
   async headers() {
-    if (process.env.VERCEL_ENV === "production") return [];
+    if (isIndexableBuild()) return [];
 
     return [
       {
