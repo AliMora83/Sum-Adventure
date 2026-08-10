@@ -10,6 +10,60 @@ the deploy it describes.
 
 ---
 
+## Verification attempt, 10 August 2026 — `sumadventure.netlify.app` serves no deployment
+
+**Recorded so nobody re-runs this and re-derives the same negative.** A full
+live-verification pass was attempted against
+`https://sumadventure.netlify.app` — headers, robots.txt, sitemap, the live
+JSON-LD, an image-pipeline benchmark against Netlify's Image CDN, and a font
+budget measurement. **None of it could be performed. Nothing is served at
+that hostname.**
+
+Every path tested — `/`, `/robots.txt`, `/sitemap.xml`, `/tours`, `/about`,
+`/index.html` — returns an identical response:
+
+```
+HTTP/2 404
+cache-control: private, max-age=0
+content-type: text/plain; charset=utf-8
+server: Netlify
+strict-transport-security: max-age=31536000; includeSubDomains; preload
+x-nf-request-id: <varies per request>
+```
+
+with a 50-byte body: `Not Found - Request ID: <id>`.
+
+**This is Netlify's edge, not this application.** Three independent pieces of
+evidence:
+
+1. **No `X-Robots-Tag` header on any response.** `next.config.ts` applies that
+   header at `source: "/:path*"`, which matches every path including a 404 —
+   confirmed the same day against the current build under `next start`, where
+   `GET /no-such-page` returns `404` **with** `X-Robots-Tag: noindex`. If this
+   application were serving that hostname, even its 404s would carry the
+   header. Its total absence means our code is not running there.
+2. **Wrong shape entirely.** This app's 404 is `text/html`, 24,799 bytes, with
+   `x-nextjs-cache` and `x-nextjs-prerender` headers. The live response is
+   `text/plain`, 50 bytes, with no Next.js headers at all.
+3. **Byte-identical to an unbound name.** A subdomain invented on the spot for
+   the comparison — a diagnostic probe, not configuration — returned the same
+   status, the same headers and the same body shape. From outside,
+   `sumadventure.netlify.app` is indistinguishable from a name nobody has ever
+   claimed.
+
+**What cannot be determined from outside**, and must be checked in the Netlify
+dashboard rather than guessed: whether no site exists under this name, whether
+a site exists but has never had a successful deploy, or whether the site is
+published under a different subdomain. All three produce this same response.
+
+**Nothing here is verified by this attempt and nothing moves out of
+UNVERIFIED.** In particular the `X-Robots-Tag` and production `robots.txt`
+items below are untouched — a 404 from an unbound hostname is not evidence
+about either. The Sprint 9 local results still stand exactly as recorded, and
+are still local-only.
+
+---
+
 ## Deployment: Vercel cancelled, Netlify not yet connected
 
 **Superseded Sprint 8.** This section previously read "Vercel setup and
