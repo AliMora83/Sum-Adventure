@@ -6,14 +6,26 @@
  * two independent copies of the same condition until Sprint 9; a shared
  * function is the only way that stays true.
  *
- * DELIBERATELY DEPENDENCY-FREE. `next.config.ts` imports this, and the config
- * is loaded before anything else in the project. In particular it must not
- * import `lib/site.ts`, which throws on an unset NEXT_PUBLIC_SITE_URL — that
- * throw is correct where it lives, but from inside config loading it would
- * surface as an unrelated-looking config error.
+ * DELIBERATELY DEPENDENCY-FREE, apart from `lib/deploy-host.ts`, which is
+ * itself held to the same rule for this reason. `next.config.ts` imports this,
+ * and the config is loaded before anything else in the project. In particular
+ * it must not import `lib/site.ts`, which throws on an unset
+ * NEXT_PUBLIC_SITE_URL — that throw is correct where it lives, but from inside
+ * config loading it would surface as an unrelated-looking config error.
+ *
+ * The host test itself moved to `lib/deploy-host.ts` in Sprint 11 and is now
+ * shared with the provisional build guards in `lib/provisional.ts`. It is the
+ * same parsing, read by two policies with opposite fail directions; see that
+ * file for why it returns a classification rather than a boolean.
  *
  * THE RULE: index only when the build context is production **and** the
- * canonical host is not a Netlify-assigned one.
+ * canonical host is a real custom domain.
+ *
+ * (Sprint 11 note: the second half is now "is positively `real`" rather than
+ * "is not `.netlify.app`". The only behavioural difference is a loopback host
+ * with CONTEXT=production — a contrived local simulation, never a deploy —
+ * which used to be indexable and now is not. That is the fail-closed
+ * direction; nothing about a real deploy changed.)
  *
  * Context alone is not enough, and the hostname is the half that actually
  * protects the client. Netlify sets CONTEXT=production for the production
@@ -41,12 +53,16 @@
  * header. That check is a LAUNCH BLOCKING item in docs/launch-checklist.md.
  */
 
-/** Netlify's own deploy domain. Any host under it is never indexable. */
-const NETLIFY_SUFFIX = ".netlify.app";
+import { classifyHost } from "./deploy-host";
 
 /**
  * Pure form, so it can be reasoned about and exercised with explicit inputs
  * rather than by mutating the environment.
+ *
+ * Fails closed on everything that is not positively a real custom domain:
+ * `netlify`, `local` and `unknown` all decline to index. A build with no
+ * parseable canonical host cannot state a canonical URL, and an uncanonical
+ * indexable page is the duplicate-content problem this exists to avoid.
  */
 export function isIndexableHost(
   siteUrl: string | undefined,
@@ -55,27 +71,7 @@ export function isIndexableHost(
   // Anything that is not a production build: no.
   if (context !== "production") return false;
 
-  // No canonical origin configured: fail closed. A build with no site URL
-  // cannot state a canonical host, and an uncanonical indexable page is the
-  // duplicate-content problem this exists to avoid.
-  if (!siteUrl) return false;
-
-  let hostname: string;
-  try {
-    hostname = new URL(siteUrl).hostname.toLowerCase();
-  } catch {
-    // Malformed value. lib/site.ts throws its own, better error for this
-    // during the build proper; here we simply decline to index.
-    return false;
-  }
-
-  // `.netlify.app` and the bare apex both excluded. `endsWith` on the dotted
-  // suffix is what stops `notnetlify.app` matching.
-  if (hostname === "netlify.app" || hostname.endsWith(NETLIFY_SUFFIX)) {
-    return false;
-  }
-
-  return true;
+  return classifyHost(siteUrl) === "real";
 }
 
 /** Environment-reading form, for the two real call sites. */

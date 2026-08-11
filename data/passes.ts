@@ -53,15 +53,28 @@ export const passes: readonly SummitPass[] = [
  * second layer under a one-line render filter; it earns its place only in the
  * world where that filter has been deleted. In that world the placeholders
  * become five fabricated pass names, about a real registered business, in
- * crawlable HTML — and preview deploy URLs do get discovered and crawled,
- * which this repo already treats as real (see the `X-Robots-Tag` header in
- * `next.config.ts`). That is the same harm "any-deploy" exists for in
- * `data/organization.ts`, and production-only would let it onto every
- * preview.
+ * crawlable HTML. Production-only scope would let that onto every preview
+ * served from the client's domain, so the scope has to key on the host, not
+ * on the context.
+ *
+ * **Sprint 11: "any-deploy" → "real-domain".** The argument above is about
+ * *crawlable* HTML, and it is the host that decides whether anything is
+ * crawlable. The `netlify.app` staging host is `noindex` by header and
+ * `Disallow: /` in robots.txt, both derived from the same host test this
+ * scope reads (lib/deploy-host.ts), so the placeholders are not reachable by
+ * a crawler there. Shipping them to that host is deliberate — under
+ * "any-deploy" the site could not be deployed for review at all, since
+ * `<name>.netlify.app` is its only address until the domain is attached.
+ *
+ * **The guard re-arms by itself.** Nothing here needs editing at launch:
+ * point `NEXT_PUBLIC_SITE_URL` at the client's real domain and this fires on
+ * the next build, with `ALLOW_PROVISIONAL_DEPLOY` unable to suppress it.
+ * The render filter in `Tsikoane.tsx` is unchanged and is still the layer
+ * that actually keeps these names off the page.
  */
 assertNoProvisional({
   source: "data/passes.ts",
-  scope: "any-deploy",
+  scope: "real-domain",
   offenders: passes
     .filter((p) => !p.confirmed)
     .map((p) => `pass ${p.n} = ${JSON.stringify(p.name)} (${p.note})`),

@@ -99,15 +99,27 @@ export function organizationJsonLdString(): string {
 }
 
 /**
- * The guard. Scope "any-deploy", not "production": unlike a provisional
- * elevation, placeholder JSON-LD renders nothing a human would notice on a
- * preview deploy, so carrying it there buys no review value — while a crawler
- * reaching that preview would read fabricated claims about a real company.
+ * The guard. Scope "real-domain" as of Sprint 11, previously "any-deploy".
+ *
+ * Still not "production": a `branch-deploy` or `deploy-preview` served from
+ * the client's actual domain is every bit as crawlable as production, and
+ * placeholder JSON-LD renders nothing a human would notice, so carrying it to
+ * a preview buys no review value to offset the risk.
+ *
+ * **This placeholder JSON-LD ships to the `netlify.app` staging host on
+ * purpose.** That host is `noindex` by header and `Disallow: /` in
+ * robots.txt — both from the same host test this scope reads, in
+ * lib/deploy-host.ts — so no crawler reaches these fabricated claims there,
+ * and the alternative was being unable to deploy the site for review at all.
+ *
+ * **The guard re-arms by itself.** Nothing here needs editing at launch:
+ * point `NEXT_PUBLIC_SITE_URL` at the client's real domain and this fires on
+ * the next build. `ALLOW_PROVISIONAL_DEPLOY` cannot suppress it there.
  * See lib/provisional.ts.
  */
 assertNoProvisional({
   source: "data/organization.ts",
-  scope: "any-deploy",
+  scope: "real-domain",
   offenders: (
     Object.entries(organization) as [
       string,
