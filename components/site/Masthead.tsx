@@ -1,51 +1,156 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Button } from "@/components/ui/Button";
 
+/**
+ * No Contact entry. The Enquire button beside this row already routes to
+ * /contact, and two links to the same page in one pill is redundant. The
+ * button is now the only masthead route to that page — if it is ever
+ * restyled into something that opens WhatsApp or an external URL instead,
+ * put Contact back here first.
+ */
 const nav = [
+  { href: "/", label: "Home" },
   { href: "/about", label: "About" },
   { href: "/#tsikoane", label: "Tsikoane" },
   { href: "/tours", label: "Tours" },
 ];
 
+/**
+ * Floating pill masthead. Server component, zero JS.
+ *
+ * Opaque white at every scroll position — there is deliberately no
+ * scroll-driven colour or opacity change, because that needs a scroll
+ * listener and a client boundary (invariant 1), and because a pill that
+ * changes state mid-scroll reads as a bug on a page whose whole motion
+ * language is the altitude rail.
+ *
+ * The border and the shadow are load-bearing, not decoration: the hero
+ * behind this is a bright snow photograph, and a borderless white pill on
+ * near-white snow has no visible edge at all. The hero also carries a
+ * top-down scrim (see Hero.tsx) so the separation holds across whatever
+ * imagery ends up there.
+ *
+ * POSITIONING — `fixed`, not `sticky`, and the difference matters here.
+ * A `sticky top-*` element renders at its *flow* position until the scroll
+ * passes it, so as the first child of <body> it would sit flush against the
+ * viewport top at rest, only acquire its offset after scrolling, and push
+ * the hero down by its own height. This pill has to float clear of the top
+ * edge from the first frame and overlay the hero. `fixed` gives exactly the
+ * described behaviour; both are equally zero-JS.
+ *
+ * WIDTH — 70vw at lg and up, centred in the VIEWPORT. Deliberately measured
+ * against the screen and nothing else: not the 1180px content column, not the
+ * hero copy block's gutter, not `--spacing-rail`. The pill's left edge does
+ * not line up with the headline, and it is not inset to clear the altitude
+ * rail — the rail is `fixed left-0 w-rail` and simply passes underneath the
+ * pill's left end. That overlap is accepted, and it is why neither element
+ * offsets for the other: the rail's position is a function of the left screen
+ * edge, the pill's of the screen centre, and they are independent by design.
+ *
+ * This replaces an earlier rail-derived inset (`pl-[calc(var(--spacing-rail)
+ * + 20px)]`, matching the content column exactly). Don't reinstate it —
+ * floating the pill free of the content grid is the point.
+ *
+ * Below lg the previous behaviour is unchanged: the rail isn't rendered at
+ * all there, and the pill stays near-full width inside the plain page gutter.
+ */
 export function Masthead() {
   return (
-    <header className="fixed inset-x-0 top-0 z-[60] border-b border-mahlasela/15 bg-senqu/80 backdrop-blur-md">
-      <div className="mx-auto flex h-[70px] max-w-[1180px] items-center justify-between gap-5 px-7 lg:pl-[152px]">
-        <Link href="/" className="flex items-center gap-3">
-          {/* Supplied PNGs had white backgrounds; these are knocked out.
-              Still need a proper .svg and a white variant from the client. */}
-          <Image
-            src="/images/sumadv-icon.png"
-            alt="Sum Adventures"
-            width={252}
-            height={280}
-            className="h-[38px] w-auto"
-            priority
-          />
-          <span className="text-base uppercase leading-none tracking-[0.1em] text-white [font-variation-settings:'wdth'_112,'wght'_800]">
-            Sum Adventures
-            <span className="mt-1.5 block font-mono text-[8.5px] font-normal tracking-[0.2em] text-mahlasela">
-              More than just a trip
-            </span>
-          </span>
-        </Link>
+    <header className="fixed inset-x-0 top-3 z-[60] sm:top-4">
+      <div className="mx-auto w-full max-w-[1180px] px-3 sm:px-5 lg:w-[70vw] lg:max-w-none lg:px-0">
+        {/*
+          ALIGNMENT — `justify-center` below md, `justify-between` from md up.
+          Below md both the nav and the Enquire button are `hidden`, so the
+          logo is the only child in this row and centring it is what
+          `justify-center` does. md is reused deliberately: it is the same
+          breakpoint those two children appear at, so the logo stops being
+          alone and starts being left-aligned in the same step. Do not
+          introduce a second breakpoint for this.
 
-        <nav className="hidden gap-7 md:flex">
-          {nav.map((n) => (
-            <Link
-              key={n.href}
-              href={n.href}
-              className="text-[12.5px] uppercase tracking-[0.1em] text-[#cfe0f2] transition-colors duration-200 hover:text-minowane [font-variation-settings:'wdth'_100,'wght'_600]"
-            >
-              {n.label}
-            </Link>
-          ))}
-        </nav>
+          WHEN THE PHASE 2 HAMBURGER LANDS: this must become a three-column
+          grid with an empty left cell (`grid grid-cols-[1fr_auto_1fr]`, logo
+          in the middle, hamburger in the right cell). A hamburger added to
+          the right of a `justify-center` flex row occupies width on one side
+          only, which pushes the logo left of true centre by half the
+          hamburger's width — it will read as misaligned, not as centred.
 
-        <Button href="/contact" className="px-5 py-3 text-[11.5px]">
-          Enquire
-        </Button>
+          Residual, and it is pre-existing: `pl-4 pr-3` is asymmetric, so the
+          centred logo sits 2px right of the pill's true centre below md. That
+          asymmetry exists to balance the Enquire button against the logo at
+          md and up, and the padding is deliberately left alone here.
+        */}
+        <div className="flex h-[58px] items-center justify-center gap-4 rounded-lg border border-[rgba(7,43,40,0.08)] bg-white pl-4 pr-3 shadow-[0_4px_24px_rgba(7,43,40,0.10)] md:h-[68px] md:justify-between md:pl-6 md:pr-4">
+          {/*
+            ==== NAV LOGO SIZE — TUNE HERE ====
+            `w-[96px] md:w-[118px]` is the only thing to change. Height is
+            derived (h-auto), so the aspect ratio cannot be distorted by
+            editing one number.
+
+            There is a ceiling, and it is close. The asset is trimmed to its
+            artwork, aspect 2.064, and the pill height is fixed at 58px /
+            68px. Sprint 6i took this to 130px, which renders 63.0px tall in
+            the 68px pill — 2.5px of clearance top and bottom, tight enough
+            that the mark read as jammed against the pill rather than set
+            inside it. At 118px it renders 57.2px tall, giving 5.4px per
+            side. Going much past 130px means growing the pill, which Sprint
+            6i explicitly ruled out. Mobile is unchanged at 96px (46.5px
+            tall in the 58px pill, 5.7px of clearance) — the two sides were
+            already close and 118px brings desktop into line with it.
+
+            Source is the trimmed AVIF in public/brand/, not the raw PNG:
+            the original carried 33px of transparent padding down one side,
+            which is why the old 85px render looked smaller than its box.
+
+            `unoptimized` IS DELIBERATE — do not remove it as an oversight.
+            This asset is already AVIF, already trimmed, and already at the
+            2x dimensions it is displayed at, so /_next/image has nothing left
+            to do but re-encode it. Measured in Sprint 6j: the optimiser
+            re-encodes at q=75 and returns a LARGER file than the committed
+            source (9,489 B source -> 12,435 B served). Bypassing it serves
+            the source bytes verbatim.
+
+            Scope: pre-sized flat vector brand artwork only. Photography stays
+            on the optimiser, where responsive widths and format negotiation
+            are doing real work — the hero and the tour grid must not get this
+            prop.
+          */}
+          <Link href="/" className="flex shrink-0 items-center" aria-label="Sum Adventures — home">
+            <Image
+              src="/brand/sum-logo.avif"
+              alt="Sum Adventures"
+              width={260}
+              height={126}
+              priority
+              unoptimized
+              className="h-auto w-[96px] md:w-[118px]"
+            />
+          </Link>
+
+          {/* Desktop only. On mobile the bottom sticky bar already carries
+              WhatsApp and Tours, so there is nothing for a hamburger to open. */}
+          <nav className="hidden items-center gap-1 md:flex">
+            {nav.map((n) => (
+              <Link
+                key={n.href}
+                href={n.href}
+                className="rounded-md px-3 py-2 text-[12.5px] uppercase tracking-[0.1em] text-teal-deep transition-colors duration-200 hover:bg-[rgba(7,43,40,0.05)] [font-variation-settings:'wdth'_100,'wght'_600]"
+              >
+                {n.label}
+              </Link>
+            ))}
+          </nav>
+
+          {/* surface-dark, not gold: gold on white is 2.13 for the label, and
+              it would also miss the 3:1 non-text minimum that the button's own
+              edge needs against the white pill. radius-md — one step down from
+              the pill's radius-lg, because it is nested inside it. */}
+          <Link
+            href="/contact"
+            className="hidden shrink-0 rounded-md bg-surface-dark px-5 py-3 text-[11.5px] uppercase tracking-[0.1em] text-white transition-colors duration-200 hover:bg-teal-deep md:inline-flex [font-variation-settings:'wdth'_100,'wght'_700]"
+          >
+            Enquire
+          </Link>
+        </div>
       </div>
     </header>
   );

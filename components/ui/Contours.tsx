@@ -1,5 +1,5 @@
 /**
- * Topographic contour hairlines. Two layers drifting at different rates
+ * Topographic teal-deep hairlines. Two layers drifting at different rates
  * is the parallax. Kept at 5-10% opacity and never placed over a
  * photo's focal area — this is the element most likely to become noise.
  */
@@ -8,7 +8,7 @@ export function Contours({ depth }: { depth: "near" | "far" }) {
   return (
     <div
       aria-hidden="true"
-      className={`pointer-events-none absolute -inset-x-[5%] -inset-y-[10%] overflow-hidden text-mahlasela ${
+      className={`pointer-events-none absolute -inset-x-[5%] -inset-y-[10%] overflow-hidden text-teal-light ${
         near ? "anim-drift-near" : "anim-drift-far"
       }`}
     >

@@ -23,15 +23,19 @@ function ElevationPill({
 }) {
   const label = formatElevation(elevation) + (provisional ? " prov." : "");
   const width = Math.round(label.length * 6.6 + 16);
-  const fillCls = emphasis ? "fill-minowane-deep" : "fill-senqu";
-  const textCls = emphasis ? "fill-white" : "fill-mahlasela";
+  // Quiet chip is the dark surface; the emphasised one steps up to teal-deep
+  // so the current station reads as active. Both carry their own opaque fill,
+  // which is what keeps the digits legible over light AND dark sections —
+  // white on teal-deep is 6.78, teal-light on surface-dark is 6.81.
+  const fillCls = emphasis ? "fill-teal-deep" : "fill-surface-dark";
+  const textCls = emphasis ? "fill-white" : "fill-teal-light";
   const borderCls = provisional
     ? emphasis
       ? "stroke-white"
-      : "stroke-minowane"
+      : "stroke-teal"
     : emphasis
       ? "stroke-white/25"
-      : "stroke-mahlasela/25";
+      : "stroke-teal-light/25";
 
   return (
     <g transform={`translate(${x} ${y})`} className={className}>
@@ -90,20 +94,20 @@ export function AltitudeRail() {
         <text
           x="20"
           y="34"
-          className="fill-contour font-mono text-[9px] tracking-[0.18em] opacity-55"
+          className="fill-teal font-mono text-[9px] tracking-[0.18em] opacity-55"
         >
           ROUTE PROFILE
         </text>
 
         <path
           d={railPath}
-          className="stroke-contour opacity-30"
+          className="stroke-teal opacity-40"
           strokeWidth="1"
           strokeDasharray="3 4"
         />
         <path
           d={railPath}
-          className="anim-rail-draw stroke-contour"
+          className="anim-rail-draw stroke-teal"
           strokeWidth="2"
           strokeLinecap="round"
           strokeDasharray={railPathLength}
@@ -112,7 +116,7 @@ export function AltitudeRail() {
 
         {stations.map((s) => (
           <g key={s.id}>
-            <circle cx={s.railX} cy={s.railY} r="2" className="fill-contour opacity-50" />
+            <circle cx={s.railX} cy={s.railY} r="2" className="fill-teal opacity-70" />
             {/* Quiet state: always visible, low-emphasis pill so the digits
                 hold their own contrast ratio regardless of what section
                 background is behind the rail at this point. */}
@@ -137,7 +141,7 @@ export function AltitudeRail() {
 
         <circle
           r="5"
-          className="anim-rail-marker fill-minowane"
+          className="anim-rail-marker fill-teal"
           style={
             {
               offsetPath: `path('${railPath}')`,
@@ -155,7 +159,7 @@ export function ScrollProgress() {
   return (
     <div
       aria-hidden="true"
-      className="anim-progress fixed inset-x-0 top-[70px] z-40 h-0.5 origin-left scale-x-0 bg-minowane lg:hidden"
+      className="anim-progress fixed inset-x-0 top-[74px] z-40 h-0.5 origin-left scale-x-0 bg-teal sm:top-[88px] lg:hidden"
     />
   );
 }

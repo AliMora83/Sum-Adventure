@@ -3,6 +3,13 @@
 Paste these in sequence. Prompt 1 gets the project running and pushed. Prompt 2
 is Sprint 4. Don't combine them — long multi-phase prompts drift.
 
+> **These prompts predate the Netlify migration and are kept verbatim as a
+> record — they are not updated in place.** Prompts 2 and 3 below mention
+> Vercel; the deploy target has been Netlify since Sprint 8, and there is no
+> Vercel account to deploy to. If you reuse prompt 3, substitute a Netlify
+> branch deploy, and note that a deploy carrying placeholder data now fails
+> the build by design (`lib/provisional.ts`). See `docs/launch-checklist.md`.
+
 `CLAUDE.md` in the repo root carries the invariants, so these prompts stay short
 and don't need to re-state the constraints.
 

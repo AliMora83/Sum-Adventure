@@ -7,10 +7,43 @@ import { submitEnquiry, type EnquiryState } from "@/app/contact/actions";
 
 const initialState: EnquiryState = { status: "idle" };
 
+/**
+ * text-base (16px), not 15px: iOS Safari zooms the viewport when a focused
+ * input's font-size is below 16px, and it does not zoom back out. That is a
+ * one-pixel change with a disproportionate mobile cost.
+ *
+ * The placeholder is #5F7671, not #8AA09C. The old value measured 2.77:1 on
+ * white and failed AA outright; this one is 4.86:1. Placeholder text is real
+ * text and is held to the 4.5:1 threshold like any other.
+ *
+ * The border is `teal-deep/70`, and it is load-bearing rather than
+ * decoration: the white field is 1.10:1 against the ice page background, so
+ * with no border there is effectively no visible edge at all and SC 1.4.11
+ * has nothing to measure.
+ *
+ * The border has TWO adjacent surfaces, and the OUTER one decides pass/fail.
+ * `background-clip` defaults to `border-box`, so the field's own white paints
+ * underneath the border and the rendered colour is identical on both sides —
+ * but it is measured against white on the inside and against ice on the
+ * outside, and ice is the darker neighbour, so the outer ratio is always the
+ * lower of the two. Sizing to the inner ratio alone is how /65 shipped short.
+ *
+ * Tailwind v4 resolves the alpha in oklab, not sRGB, so these are sampled off
+ * a real composited pixel rather than derived from the alpha value. At /70 the
+ * border renders rgb(91,148,143):
+ *
+ *   vs the white field interior   3.46:1   clears 3:1
+ *   vs the ice page background    3.14:1   clears 3:1  <- the binding one
+ *
+ * History, so neither step is re-tried: /30 was 1.60 inner / 1.46 outer — no
+ * measurable edge on either side. /65 was 3.13 inner / 2.84 outer, which
+ * passes only if you measure the side that isn't binding. Do not lower below
+ * /70 without re-measuring against ice.
+ */
 const fieldClass =
-  "mt-2 w-full border border-contour/30 bg-white px-4 py-3 text-[15px] text-senqu placeholder:text-[#8a9ab0] focus-visible:border-minowane";
-const labelClass = "block font-mono text-[11px] uppercase tracking-[0.14em] text-[#5B6C90]";
-const errorClass = "mt-1.5 text-[13px] text-minowane-deep";
+  "mt-2 w-full rounded-sm border border-teal-deep/70 bg-white px-4 py-3 text-base text-surface-dark placeholder:text-[#5F7671] focus-visible:border-teal-deep";
+const labelClass = "block font-mono text-[11px] uppercase tracking-[0.14em] text-[#586A67]";
+const errorClass = "mt-1.5 text-[13px] text-teal-deep";
 
 export function EnquiryForm({ defaultTourSlug }: { defaultTourSlug?: string }) {
   const [state, formAction, isPending] = useActionState(submitEnquiry, initialState);
@@ -18,9 +51,9 @@ export function EnquiryForm({ defaultTourSlug }: { defaultTourSlug?: string }) {
 
   if (state.status === "success") {
     return (
-      <div className="mt-10 border border-contour/20 bg-white p-8">
-        <p className="type-display text-xl text-senqu">Thanks — enquiry sent</p>
-        <p className="mt-3 text-[15px] text-[#33456B]">{state.message}</p>
+      <div className="mt-10 border border-teal-deep/20 bg-white rounded-md p-8">
+        <p className="type-display text-xl text-surface-dark">Thanks — enquiry sent</p>
+        <p className="mt-3 text-[15px] text-[#2F3E3C]">{state.message}</p>
       </div>
     );
   }
@@ -113,12 +146,12 @@ export function EnquiryForm({ defaultTourSlug }: { defaultTourSlug?: string }) {
       </div>
 
       {state.status === "error" && state.message && (
-        <p className="text-[14px] text-minowane-deep">{state.message}</p>
+        <p className="text-[14px] text-teal-deep">{state.message}</p>
       )}
 
       {state.status === "fallback" && (
-        <div className="border border-dashed border-minowane/50 p-5">
-          <p className="text-[14.5px] text-senqu">{state.message}</p>
+        <div className="border border-dashed border-teal-deep/50 p-5">
+          <p className="text-[14.5px] text-surface-dark">{state.message}</p>
           {state.whatsappHref && (
             <Button href={state.whatsappHref} external className="mt-4">
               Continue on WhatsApp
@@ -130,7 +163,7 @@ export function EnquiryForm({ defaultTourSlug }: { defaultTourSlug?: string }) {
       <button
         type="submit"
         disabled={isPending}
-        className="inline-flex items-center gap-2 rounded-sm bg-minowane-deep px-7 py-4 text-[13px] uppercase tracking-[0.1em] text-white transition-transform duration-200 ease-alt hover:-translate-y-0.5 hover:bg-minowane disabled:opacity-60 disabled:hover:translate-y-0 [font-variation-settings:'wdth'_100,'wght'_700]"
+        className="inline-flex items-center gap-2 rounded-lg bg-surface-dark px-7 py-4 text-[13px] uppercase tracking-[0.1em] text-white transition-transform duration-200 ease-alt hover:-translate-y-0.5 hover:bg-teal-deep disabled:opacity-60 disabled:hover:translate-y-0 [font-variation-settings:'wdth'_100,'wght'_700]"
       >
         {isPending ? "Sending…" : "Send enquiry"}
       </button>

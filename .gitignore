@@ -42,3 +42,8 @@ yarn-error.log*
 .vscode/*
 !.vscode/extensions.json
 .gstack/
+
+# agent tooling — local dev config (launch.json et al), not project config.
+# Untracked and reported as a dirty tree in six consecutive sprint reports
+# before this line landed.
+.claude/

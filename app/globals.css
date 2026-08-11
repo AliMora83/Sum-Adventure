@@ -1,26 +1,49 @@
 @import "tailwindcss";
 
 /* ============================================================
-   DIRECTION A · "ALTITUDE" — token system
+   "ALTITUDE" — token system
    Tailwind v4 is CSS-first: this @theme block replaces
    tailwind.config.js and generates the utilities.
 
-   Palette is a hypsometric ramp — the colour convention
-   topographic maps use for elevation, valley floor to snowline.
+   PALETTE PROVENANCE — do not alter these values without asking.
+   teal, gold and the wordmark grey were sampled directly from the
+   client's SumAdv_icon.png / SumAdv_logo.png. teal-deep, teal-light,
+   surface-dark and ice are DERIVED from those samples to meet
+   contrast requirements. They are design decisions, not
+   client-supplied brand values.
+
+   Supersedes the navy/icy-blue hypsometric ramp (senqu, maloti,
+   contour, mahlasela, snowline, minowane, minowane-deep).
    ============================================================ */
 @theme {
-  --color-senqu: #0a1b3d;
-  --color-maloti: #17376f;
-  --color-contour: #3e6ba8;
-  --color-mahlasela: #a8cdeb;
-  --color-snowline: #eef5fb;
+  /* Brand mark, large fills, type >=24px. Fails AA at 13px against
+     white (3.75) — never put small white text on it, and never use
+     it AS small text on white. Use --color-teal-deep. */
+  --color-teal: #219389;
 
-  /* Two orange values, deliberately. White on --color-minowane is
-     ~3.5:1 — fine for a 40px price numeral, fails AA at 14px.
-     --color-minowane-deep is ~5.8:1 and is the ONLY fill allowed
-     behind small white button text. */
-  --color-minowane: #e8721c;
-  --color-minowane-deep: #a8480a;
+  /* The workhorse on light surfaces: 13px white text, links on
+     white (6.78), hairline borders. */
+  --color-teal-deep: #15665f;
+
+  /* Accents on dark surfaces only. Against white it is 2.23, which
+     fails even the 3:1 non-text threshold — never on a light one. */
+  --color-teal-light: #4fbfb3;
+
+  /* The default dark pairing. 15.16 against white. */
+  --color-surface-dark: #072b28;
+
+  /* Page background. */
+  --color-ice: #edf6f4;
+
+  /* Prices, badges, CTA fill — ON DARK SURFACES ONLY. 7.12 on
+     surface-dark, but 2.13 on white and 1.94 on ice, so it fails
+     every text threshold on a light background including the 3.0
+     for large type. Text sitting on a gold fill is --color-ink
+     (8.69), never white (1.94). */
+  --color-gold: #d9aa5e;
+
+  /* Body text colour, and the only text colour permitted on gold. */
+  --color-ink: #101418;
 
   --font-display: var(--font-archivo), system-ui, sans-serif;
   --font-mono: var(--font-plex-mono), ui-monospace, monospace;
@@ -28,6 +51,12 @@
   --ease-alt: cubic-bezier(0.16, 1, 0.3, 1);
 
   --spacing-rail: 132px;
+
+  /* Radius scale. Nothing is fully rounded — no 999px, no pills.
+     A control nested inside a 16px container steps down to 12px. */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
 }
 
 @layer base {
@@ -35,15 +64,17 @@
     scroll-behavior: smooth;
   }
   body {
-    background: var(--color-snowline);
-    color: var(--color-senqu);
+    background: var(--color-ice);
+    color: var(--color-ink);
     font-family: var(--font-display);
     font-variation-settings: "wdth" 100, "wght" 400;
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
   }
+  /* teal-deep rather than teal: this ring has to hold 3:1 against
+     both the ice page background and white cards. */
   :focus-visible {
-    outline: 3px solid var(--color-minowane);
+    outline: 3px solid var(--color-teal-deep);
     outline-offset: 3px;
   }
 }
@@ -74,6 +105,36 @@
     transform: none;
   }
 
+  /* Skip-to-content link. Pure CSS and no JavaScript: the browser's own
+     fragment navigation does the work. It is positioned off-screen rather
+     than display:none or visibility:hidden, both of which would remove it
+     from the tab order and defeat the point — this is the same technique the
+     enquiry form's honeypot uses in the opposite direction.
+
+     <main> carries tabindex="-1" so focus actually lands in the content.
+     Without it the browser scrolls to the target but leaves focus on the
+     link, and the next Tab drops the user back into the masthead.
+
+     White on surface-dark is 15.16:1. */
+  .skip-link {
+    position: fixed;
+    left: -9999px;
+    top: 0;
+    z-index: 100;
+    border-radius: var(--radius-md);
+    background: var(--color-surface-dark);
+    color: #fff;
+    padding: 0.8rem 1.25rem;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .skip-link:focus-visible {
+    left: 12px;
+    top: 12px;
+  }
+
   /* Rail elevation pills (marker + ticks). Hidden by default — Firefox
      stable, with no scroll-timeline support, keeps a correct static page:
      the plain tick labels alone already carry the elevation spine without
@@ -91,8 +152,8 @@
    MOTION
    Finished state is authored above as the default. Motion is layered
    on only where supported, so Firefox stable renders a complete,
-   correct, static page. Zero JavaScript — there is no "use client"
-   anywhere in this project.
+   correct, static page. No JavaScript is involved in any of it — the only
+   "use client" in the project is the enquiry form, which has no motion.
    ============================================================ */
 @supports (animation-timeline: scroll()) {
   @media (prefers-reduced-motion: no-preference) {

@@ -1,0 +1,24 @@
+# Netlify build configuration.
+#
+# Replaces Vercel as of Sprint 8. Vercel was cancelled; nothing about the
+# application code changed in this sprint, only where it builds.
+#
+# `publish = ".next"` is correct for a Next.js site on Netlify: the Next.js
+# runtime (@netlify/plugin-nextjs) is installed automatically when Netlify
+# detects Next.js in package.json, and it reads the build output from .next.
+# It is deliberately not "out" — there is no `output: "export"` in
+# next.config.ts, so `next build` never writes an out/ directory.
+#
+# NODE_VERSION is pinned rather than left to Netlify's default so the build
+# image is a known quantity. It is "22" — the active LTS line, and a version
+# Netlify's build images actually carry. Sprint 8 pinned it to "25" to match
+# the local toolchain; 25 is a current, odd-numbered, non-LTS release and is
+# not a safe assumption about a hosted build image. Local Node may run ahead
+# of this; the deploy target is what this value is for.
+
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"

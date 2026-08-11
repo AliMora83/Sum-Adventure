@@ -22,7 +22,16 @@ export function Station({
   provisional?: boolean;
   className?: string;
 }) {
-  const toneCls = tone === "dark" ? "text-mahlasela" : "text-contour";
+  const toneCls = tone === "dark" ? "text-teal-light" : "text-teal-deep";
+  /**
+   * The elevation figure follows `tone`, and it has to. Gold is 7.12 on
+   * surface-dark but 1.94 on the ice page background — it fails every text
+   * threshold on a light surface, including the 3.0 for large type. So gold
+   * is the dark-surface figure only; light surfaces get teal-deep (6.16 on
+   * ice). One token for both would fail half the sections.
+   */
+  const figureCls = tone === "dark" ? "text-gold" : "text-teal-deep";
+  const figureBorder = tone === "dark" ? "border-gold" : "border-teal-deep";
   return (
     <p
       className={`flex items-center gap-4 font-mono text-xs font-medium uppercase tracking-[0.16em] [font-variant-numeric:tabular-nums] ${toneCls} ${className}`}
@@ -30,8 +39,8 @@ export function Station({
       <b
         className={
           provisional
-            ? "rounded-full border border-dashed border-minowane px-2 py-0.5 font-medium text-minowane"
-            : "font-medium text-minowane"
+            ? `rounded-sm border border-dashed ${figureBorder} px-2 py-0.5 font-medium ${figureCls}`
+            : `font-medium ${figureCls}`
         }
       >
         {formatElevation(elevation)}

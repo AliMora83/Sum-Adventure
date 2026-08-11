@@ -109,7 +109,10 @@ Includes: guided hiking · dinosaur footprints tour · San rock art tour ·
 horse riding · yoga & meditation · sound therapy · traditional Basotho meals ·
 bonfire experience · sunrise & sunset photography · team building activities
 
-Plateau elevation: **[UNCONFIRMED]** — renders as `Elev. TBC`
+Plateau elevation: **1,881 m — CONFIRMED by Mpho, Sprint 7.** Supersedes the
+provisional 2,600 m that stood in `data/stations.ts` from Sprint 5. It renders
+as a normal confirmed elevation everywhere; nothing shows `Elev. TBC` or a
+"prov." suffix for Tsikoane any more.
 Summit pass names: 1 of 6 confirmed (Linareng Pass). Five **[UNCONFIRMED]**.
 
 ### Sum Ultimate Afriski Experience
@@ -119,13 +122,39 @@ R4,600 per person · minimum 6 pax · weekend
 Includes: accommodation · daily breakfast · transport · Afriski entrance fee ·
 full snowpass · equipment rental · ski lesson for all levels · tubing
 
-### Afriski Winter Day Trip — PAST TRIP
+### Afriski Winter Day Trip — STANDING ACTIVITY
 
 R900 pp (transport & entry) / R1,100 pp (with bum boarding) · R300 deposit ·
-departed from Maputsoe · ran Saturday 25 July 2026
+departs from Maputsoe · the flyer date was Saturday 25 July 2026
 
-**Status: past.** Client's decision is to retain it on the site as a past trip.
-Render with no price CTA and no Enquire button — see CLAUDE.md.
+**Status: upcoming.** Superseded in Sprint 5.5 — this section previously read
+"PAST TRIP / Status: past", from the client's Sprint 4.5 instruction after the
+flyer date lapsed. The client then asked for it to be presented as a
+**standing, always-available activity**, with dates agreed per enquiry rather
+than tied to the one flyer date. It renders as a normal bookable tour.
+
+The 25 July 2026 date is retained above as provenance for the pricing only.
+**Do not treat it as an expiry.** Nothing in the site infers bookability from
+a date — there is no date field on `Tour` and none should be added. `status`
+flips to `past` only on the client's actual instruction. See CLAUDE.md
+invariant 8, and `docs/launch-checklist.md` for the manual-step risk this
+creates.
+
+**~~Scheduled flip: 31 August 2026.~~ WITHDRAWN, Sprint 9.** This tour was to
+be set to `status: "past"` on that date, owner Ali. Do not act on it.
+
+The tension that note recorded — a standing activity would not normally carry
+a flip date at all — is what resolved it. Sprint 9 put the standing framing on
+the page itself: the tour renders `Seasonal · departure dates on enquiry`
+(`availability` in `data/tours.ts`). A trip that states dates are agreed per
+enquiry does not go stale on a calendar date, so the flip had nothing left to
+correct, and flipping it would now contradict the client's own instruction.
+
+What is **not** resolved: the "standing, always-available activity" framing is
+still **[UNCONFIRMED]** by Mpho. The seasonal line is deliberately true under
+either answer, so the site asserts nothing that a "one-off" reply would
+falsify — but the confirmation is still worth getting, as is the season close
+date. See `docs/Client-ToDo.md` items 7 and 8.
 
 ### Educational tours
 
@@ -178,9 +207,31 @@ Longer first-person bio requested from client, not yet supplied.
 
 Sky blue · yellow/orange · black · white
 
-**Superseded.** The site uses the approved navy / icy-blue / orange system in
-`app/globals.css`. Client has approved a logo recolour to match. Do not
-reintroduce the stated palette.
+**Superseded — and the replacement is now derived from the client's own logo.**
+As of Sprint 6C the site uses a teal/gold system in `app/globals.css`: `teal`
+`#219389` and `gold` `#D9AA5E` sampled directly from `SumAdv_icon.png` /
+`SumAdv_logo.png`, with `teal-deep`, `teal-light`, `surface-dark` and `ice`
+derived from those to meet contrast. Do not reintroduce "sky blue · yellow/
+orange · black · white" as stated above, and do not reintroduce the navy /
+icy-blue system that sat here from Sprint 3 to Sprint 7.
+
+The **logo recolour** the client approved in Sprint 4.5 is moot and was never
+implemented. The direction reversed: rather than recolouring the mark to match
+a navy site, the site was repalleted to match the mark. The client's artwork
+ships unmodified.
+
+The **repalette** was blocked on three values from Ali. All three arrived and
+landed in Sprint 6C: `teal-deep #15665F` (passes AA at 13px white text),
+`surface-dark #072B28` (the dark surface replacing navy), and gold's role —
+it survives, but on dark surfaces only and **not** as the CTA fill, because
+gold on white is 2.13 and fails both the text and the 3:1 non-text minimum.
+CTA fills on light backgrounds are `surface-dark`.
+
+Still outstanding from the client: a **knockout/reversed logo variant** for
+dark backgrounds. The supplied PNG is a teal mark with a dark-grey wordmark on
+white and is unusable on `surface-dark`, so the footer currently renders the
+wordmark as type with no mark. The existing PNG must not be inverted or
+recoloured as a stand-in.
 
 ## Not supplied — do not fabricate
 

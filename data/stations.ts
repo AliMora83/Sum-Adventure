@@ -1,3 +1,5 @@
+import { assertNoProvisional } from "@/lib/provisional";
+
 /**
  * The altitude spine. Section order on the homepage is determined by real
  * elevation, ascending. Every number here must survive a customer
@@ -15,9 +17,14 @@ export type Station = {
   railY: number;
   /**
    * Fenced exception to "never invent a number" — see CLAUDE.md invariant 5.
-   * Set ONLY on Tsikoane, and only until the client supplies a real figure.
-   * Every place a provisional elevation renders must show it as visibly
-   * unconfirmed. Guarded below so it can't ship to a live domain.
+   * Currently set on NO station: Tsikoane, the only station that ever carried
+   * it, was confirmed at 1,881 m by the client and the flag was removed.
+   *
+   * The mechanism stays for the next figure that needs it. If you set this,
+   * every place the elevation renders must show it as visibly unconfirmed
+   * (dashed pill, "prov." suffix — Station.tsx and AltitudeRail.tsx already
+   * do this), and the guard below will block production builds until a real
+   * figure replaces it.
    */
   provisional?: boolean;
 };
@@ -25,42 +32,50 @@ export type Station = {
 export const stations: Station[] = [
   { id: "hero",     elevation: 1400, place: "Lowest point in Lesotho", railX: 20, railY: 60 },
   { id: "hlotse",   elevation: 1631, place: "Hlotse, Leribe",          railX: 23, railY: 180 },
-  { id: "tsikoane", elevation: 2600, place: "Tsikoane plateau",        railX: 26, railY: 300, provisional: true },
+  { id: "tsikoane", elevation: 1881, place: "Tsikoane plateau",        railX: 26, railY: 300 },
   { id: "tours",    elevation: 3222, place: "Mahlasela Pass",          railX: 52, railY: 420 },
   { id: "enquire",  elevation: 3482, place: "Thabana Ntlenyana",       railX: 58, railY: 540 },
 ];
 
 /**
- * Build guard for the provisional exception above. A provisional elevation
- * is fine on localhost, where it exists so the rail draws correctly during
- * design work — it must never reach the client's live domain. A warning
- * isn't enough here; a warning is exactly what let a stray dummy value
- * ("3798m") sit unnoticed for four sprints. This throws at build/import
- * time, which aborts `next build`.
+ * Build guard for the provisional exception above.
+ *
+ * As of Sprint 7 no station is flagged, so `offenders` is empty and
+ * production builds pass. That is the correct resting state — the guard is
+ * not dead code awaiting deletion, it is the mechanism that makes the
+ * exception safe to use again. Leave it in place.
+ *
+ * A provisional elevation exists so the rail draws correctly during design
+ * work, and it is *meant* to be visible on localhost and on preview deploys
+ * — reviewing it there is the entire point of carrying it. Hence scope
+ * "production": preview must keep rendering it, visibly unconfirmed.
+ *
+ * Keyed on CONTEXT — Netlify's build context — not on NEXT_PUBLIC_SITE_URL.
+ * The original check fired whenever the site URL was non-localhost, which is
+ * true of every preview deploy, so it broke exactly the builds that are
+ * supposed to show the provisional value. NEXT_PUBLIC_SITE_URL is a canonical
+ * origin shared by every environment (see lib/site.ts) and says nothing about
+ * which environment is building; CONTEXT is the signal that separates a
+ * production deploy from a preview one. It was VERCEL_ENV until Sprint 9,
+ * which is unset on Netlify and left this guard unable to fire at all.
+ *
+ * The throwing mechanism itself now lives in lib/provisional.ts, shared with
+ * the JSON-LD guard in data/organization.ts. Behaviour here is unchanged.
  */
-function isLocalSiteUrl(url: string | undefined): boolean {
-  if (!url) return true;
-  try {
-    return new URL(url).hostname === "localhost";
-  } catch {
-    return true;
-  }
-}
-
-if (!isLocalSiteUrl(process.env.NEXT_PUBLIC_SITE_URL)) {
-  for (const s of stations) {
-    if (s.provisional) {
-      throw new Error(
-        `data/stations.ts: station "${s.id}" (${s.place}) has a provisional ` +
-          `elevation (${s.elevation} m) but NEXT_PUBLIC_SITE_URL is set to ` +
-          `"${process.env.NEXT_PUBLIC_SITE_URL}", not localhost. Provisional ` +
-          `data must never ship to a live domain — get the real figure from ` +
-          `the client, or unset NEXT_PUBLIC_SITE_URL if this really is a ` +
-          `local/preview build.`
-      );
-    }
-  }
-}
+assertNoProvisional({
+  source: "data/stations.ts",
+  scope: "production",
+  offenders: stations
+    .filter((s) => s.provisional)
+    .map(
+      (s) =>
+        `station "${s.id}" (${s.place}) — provisional elevation ${s.elevation} m`
+    ),
+  remedy:
+    `Get the real figure from the client and delete the \`provisional\` ` +
+    `flag. Preview and local builds are unaffected and will keep rendering ` +
+    `it as visibly unconfirmed.`,
+});
 
 export const railPath = stations
   .map((s, i) => `${i === 0 ? "M" : "L"}${s.railX} ${s.railY}`)
