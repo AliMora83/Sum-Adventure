@@ -154,16 +154,25 @@ below govern any future use of it:
   production-condition build: `CONTEXT=production npm run build` exits 0 as
   the data now stands, and exits 1 with the guard's own message when a station
   is flagged. Do not delete it because it currently passes.
-- **The guard keys on `CONTEXT`, not `NEXT_PUBLIC_SITE_URL`. Do not
+- **The stations guard keys on `CONTEXT`, not the host. Do not
   change it back.** Sprint 5 keyed it on "`NEXT_PUBLIC_SITE_URL` is not
   localhost", which sounds equivalent and is not: every preview deploy has a
   non-localhost site URL, so the guard failed precisely the builds where the
-  provisional value is *supposed* to be visible for review. As of Sprint 6a
-  `NEXT_PUBLIC_SITE_URL` is a single canonical origin shared by all
-  environments (invariant below), so it carries no information about which
-  environment is building. `CONTEXT` is the only signal that distinguishes
-  production from preview. Preview and local builds must keep rendering the
-  provisional value — blocking them is the bug, not the feature.
+  provisional value is *supposed* to be visible for review. `CONTEXT` is the
+  only signal that distinguishes production from preview. Preview and local
+  builds must keep rendering the provisional value — blocking them is the bug,
+  not the feature.
+- **`data/stations.ts` stays on scope `"production"` deliberately, and it is
+  now the only caller that does.** Sprint 11 moved `data/organization.ts` and
+  `data/passes.ts` to the host-aware `"real-domain"` scope; stations was left
+  alone on purpose, and the difference is not an oversight to tidy up. A
+  provisional *elevation* renders — dashed pill, "prov." suffix — and being
+  seen on a preview is the entire reason for carrying one. A host-aware scope
+  would keep it off the client's domain but would also let it through on
+  every preview *and* production-context build served from the staging host,
+  which is not what this guard is for. Placeholder JSON-LD and placeholder
+  pass names render nothing, so they have no review value to protect and are
+  correctly scoped to the host instead. Different failure, different scope.
 - **`CONTEXT` is Netlify's build context and replaced `VERCEL_ENV` in
   Sprint 9.** This was not a rename. `VERCEL_ENV` is simply unset on Netlify,
   so between the platform move and Sprint 9 every guard in
@@ -172,14 +181,20 @@ below govern any future use of it:
   `deploy-preview`, `branch-deploy` and `dev`; unset or `dev` is treated as
   local. If this project moves platform again, this is the first thing to
   change.
-- **There is now an escape hatch, and it is a launch blocker.**
-  `ALLOW_PROVISIONAL_DEPLOY=1` downgrades every guard from a build failure to
-  a loud warning naming each offending field (Sprint 9). It fails closed —
-  only the exact string `1` disarms it — and it exists for a throwaway
-  preview, never for the client's domain. Deleting it from the Netlify
-  environment before launch is a LAUNCH BLOCKING item in
-  `docs/launch-checklist.md`, which lists all ten values it would publish.
-  Do not reach for it to clear a build; the flag is not the problem the
+- **There is an escape hatch, and as of Sprint 11 it cannot reach the real
+  domain.** `ALLOW_PROVISIONAL_DEPLOY=1` downgrades a guard from a build
+  failure to a loud warning naming each offending field (Sprint 9). It fails
+  closed on its value — only the exact string `1` disarms anything — and
+  since Sprint 11 it fails closed on the host as well: **it is honoured only
+  when the host is `netlify` or `local`, and is ignored outright on a real
+  domain or on any host the build cannot identify.** The guard throws there
+  regardless.
+  That was the point. It is a dashboard variable, and dashboard variables
+  outlive the reason they were set; left behind it would previously have gone
+  on suppressing every guard straight through the domain switch, publishing
+  ten fabricated values with a clean-looking build log. It no longer can, so
+  it is hygiene rather than LAUNCH BLOCKING in `docs/launch-checklist.md`.
+  Still do not reach for it to clear a build; the flag is not the problem the
   build is reporting.
 - Consequence, and it is intended: **production builds fail while any station
   is provisional.** Production is meant to be blocked until the client
@@ -207,10 +222,20 @@ they could carry a build guard. **Two layers keep them off the page and both
 must stay:** the render filter `passes.filter((p) => p.confirmed)` in
 `components/sections/Tsikoane.tsx`, which is what actually stops them
 rendering, and `assertNoProvisional` in `data/passes.ts` at scope
-`any-deploy`, which aborts any deployed build while an unconfirmed pass
+`real-domain` (Sprint 11; was `any-deploy`), which aborts any build bound for
+the client's real domain while an unconfirmed pass
 remains. The guard is a backstop against the filter being deleted; it is
-deliberately a no-op on a local build. Do not set `confirmed: true` to clear a
-build — that flag is the thing keeping the placeholder off the page.
+deliberately a no-op on a local build **and on the `netlify.app` staging
+host**. Do not set `confirmed: true` to clear a build — that flag is the thing
+keeping the placeholder off the page.
+
+**These five placeholders currently ship to the staging host, and that is
+deliberate.** They reach no markup (the render filter drops them) and the host
+is `noindex` either way, so there is nothing for a crawler to read. The
+previous `any-deploy` scope blocked every Netlify build outright, which meant
+the site could not be deployed for review at all while the names were
+outstanding — the guard was blocking the wrong thing. It re-arms by itself at
+the domain switch; see the launch switch section below.
 
 ### 7. Secrets
 
@@ -315,6 +340,52 @@ Where a real value genuinely isn't known yet, that is a blocker to record,
 not a gap to fill: leave it unset and say so.
 
 ---
+
+## The launch switch — `NEXT_PUBLIC_SITE_URL`
+
+**One environment variable decides three things, through one shared host
+test.** Change it in the Netlify dashboard from the `<name>.netlify.app` host
+to the client's real domain, redeploy, and all three move together:
+
+1. the JSON-LD guard (`data/organization.ts`) starts enforcing
+2. the pass-names guard (`data/passes.ts`) starts enforcing
+3. the `noindex` header lifts and `robots.txt` flips to `Allow: /`
+
+There is no code change at launch and no second step. Full operational detail
+is in `docs/launch-checklist.md`; this section exists so nobody re-derives the
+mechanism from the call sites.
+
+### The shared predicate lives in `lib/deploy-host.ts`
+
+`classifyHost(siteUrl)` returns `"real" | "netlify" | "local" | "unknown"`.
+Two consumers read it and they must never disagree:
+
+- `lib/indexable.ts` — may a crawler index this build? (`next.config.ts`
+  header, `app/robots.ts`)
+- `lib/provisional.ts` — may placeholder data ship to this build? (scope
+  `"real-domain"`)
+
+**It is a third module rather than a function on `lib/indexable.ts`, and that
+is deliberate.** There is no circular import either way, so this is a cohesion
+choice: the build guards should not depend on a module whose stated subject is
+SEO, and `indexable.ts`'s dependency-free constraint should not silently become
+load-bearing for them too.
+
+**It returns a classification, not a boolean, and that is also deliberate.**
+The two consumers fail in *opposite* directions on the same unknown input: an
+unset or unparseable `NEXT_PUBLIC_SITE_URL` must mean "do not index" for one
+and "enforce the guard" for the other. A single `isRealHost(): boolean` gives
+one of them the dangerous answer. Do not collapse it into one.
+
+**`lib/deploy-host.ts` must stay import-free.** `next.config.ts` imports
+`lib/indexable.ts`, which imports this, and the config loads before anything
+else. In particular it must never import `lib/site.ts`, which throws on an
+unset `NEXT_PUBLIC_SITE_URL` — correct where it lives, but from inside config
+loading it surfaces as an unrelated-looking config error.
+
+**Both consumers fail closed, in their own direction.** `unknown` means "do
+not index" for indexability and "enforce" for the guards. A build that cannot
+tell where it is going must not assume the harmless case.
 
 ## Design direction: "Altitude"
 
