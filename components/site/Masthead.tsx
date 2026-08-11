@@ -58,7 +58,28 @@ export function Masthead() {
   return (
     <header className="fixed inset-x-0 top-3 z-[60] sm:top-4">
       <div className="mx-auto w-full max-w-[1180px] px-3 sm:px-5 lg:w-[70vw] lg:max-w-none lg:px-0">
-        <div className="flex h-[58px] items-center justify-between gap-4 rounded-lg border border-[rgba(7,43,40,0.08)] bg-white pl-4 pr-3 shadow-[0_4px_24px_rgba(7,43,40,0.10)] md:h-[68px] md:pl-6 md:pr-4">
+        {/*
+          ALIGNMENT — `justify-center` below md, `justify-between` from md up.
+          Below md both the nav and the Enquire button are `hidden`, so the
+          logo is the only child in this row and centring it is what
+          `justify-center` does. md is reused deliberately: it is the same
+          breakpoint those two children appear at, so the logo stops being
+          alone and starts being left-aligned in the same step. Do not
+          introduce a second breakpoint for this.
+
+          WHEN THE PHASE 2 HAMBURGER LANDS: this must become a three-column
+          grid with an empty left cell (`grid grid-cols-[1fr_auto_1fr]`, logo
+          in the middle, hamburger in the right cell). A hamburger added to
+          the right of a `justify-center` flex row occupies width on one side
+          only, which pushes the logo left of true centre by half the
+          hamburger's width — it will read as misaligned, not as centred.
+
+          Residual, and it is pre-existing: `pl-4 pr-3` is asymmetric, so the
+          centred logo sits 2px right of the pill's true centre below md. That
+          asymmetry exists to balance the Enquire button against the logo at
+          md and up, and the padding is deliberately left alone here.
+        */}
+        <div className="flex h-[58px] items-center justify-center gap-4 rounded-lg border border-[rgba(7,43,40,0.08)] bg-white pl-4 pr-3 shadow-[0_4px_24px_rgba(7,43,40,0.10)] md:h-[68px] md:justify-between md:pl-6 md:pr-4">
           {/*
             ==== NAV LOGO SIZE — TUNE HERE ====
             `w-[96px] md:w-[118px]` is the only thing to change. Height is
