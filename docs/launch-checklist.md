@@ -10,6 +10,58 @@ the deploy it describes.
 
 ---
 
+## THE LAUNCH SWITCH — one action, not three
+
+**Change `NEXT_PUBLIC_SITE_URL` in the Netlify dashboard from the
+`<name>.netlify.app` host to the client's real domain, then redeploy.**
+
+That is the whole launch action. Owner: Ali. It is a dashboard change plus a
+deploy — there is no code change, no flag to flip in the repo, and no second
+step to remember.
+
+**Three things re-arm automatically as a consequence.** They are listed here
+so nobody hunts for them as separate tasks, *not* because they need doing:
+
+1. **The JSON-LD guard** (`data/organization.ts`) starts enforcing and will
+   fail the build if any of the five placeholder organisation fields is still
+   flagged `provisional: true`.
+2. **The pass-names guard** (`data/passes.ts`) starts enforcing and will fail
+   the build while any of the five unconfirmed pass names remains.
+3. **The `noindex` header lifts** and `robots.txt` flips to `Allow: /`
+   (`next.config.ts`, `app/robots.ts`).
+
+All three read the same host test — `lib/deploy-host.ts`, shared by
+`lib/indexable.ts` and `lib/provisional.ts` as of Sprint 11 — so they cannot
+disagree with each other and cannot be half-applied. One value moves them all.
+
+**Expect the first post-switch build to fail, and that is the system
+working.** Items 1 and 2 are the client's outstanding content (five
+organisation fields, five pass names — see `docs/Client-ToDo.md`). Until
+those arrive, pointing production at the real domain *should* abort the
+build rather than publish fabricated claims about a real registered company
+on its own domain. The fix is the content, not the guard.
+
+**`ALLOW_PROVISIONAL_DEPLOY` cannot be used to force it through.** As of
+Sprint 11 the bypass is ignored on a real host — see its section below.
+
+### Why this is one action and not three
+
+Before Sprint 11 the two guards were scoped `any-deploy`, which fired on
+every deploy regardless of address. Since `<name>.netlify.app` is the site's
+only address until the domain is attached, that scope made "any deploy" and
+"the real site" the same set, and the site could not be deployed for review
+at all. They now key on the host instead, which is what the harm was ever
+about: the staging host is `noindex` and `Disallow: /` by the same predicate,
+so no crawler reaches the placeholders there.
+
+The deliberate consequence: **placeholder JSON-LD and placeholder pass names
+are live on the `netlify.app` host right now, on purpose.** They are not
+indexable, they are not rendered (the pass names are filtered out by
+`Tsikoane.tsx` before markup), and they stop being deployable the moment the
+domain switch happens.
+
+---
+
 ## Verification attempt, 10 August 2026 — `sumadventure.netlify.app` serves no deployment
 
 **Recorded so nobody re-runs this and re-derives the same negative.** A full
@@ -177,9 +229,36 @@ invariant 9):
 
 **That is still not verification.** It proves the logic, not the deployment.
 Both runs used stand-in hostnames and a local server. What remains unobserved
-is the real production origin: check response headers on the live domain and
-confirm `X-Robots-Tag` is **absent**. A stray `X-Robots-Tag: noindex` in
-production would deindex the entire site silently.
+is the real production origin.
+
+#### Post-launch verification — do this after the switch
+
+**Status: UNVERIFIED. Blocked on: the domain switch and a published
+production deploy.**
+
+After changing `NEXT_PUBLIC_SITE_URL` and redeploying, curl the **published
+production deploy** on the client's real domain and confirm no
+`X-Robots-Tag` header remains on an HTML response:
+
+```bash
+curl -sSI https://<the-client-domain>/ | grep -i x-robots-tag
+```
+
+Expect **no output**. Any `x-robots-tag: noindex` here means the site is
+being deindexed silently, which is the highest-consequence failure on this
+page — it is invisible until traffic never arrives.
+
+Then confirm the other half of the same switch: `/robots.txt` returns
+`Allow: /` and names the real origin in its `Sitemap:` line, and
+`/sitemap.xml` lists that same origin.
+
+**The check is only meaningful against the published production deploy.**
+Netlify injects `X-Robots-Tag: noindex` of its own accord on deploy previews,
+on unpublished deploys and on superseded branch deploys — that header comes
+from Netlify's edge, not from `next.config.ts`, and no change in this repo
+removes it. Running this check against a preview URL, a permalink, or an old
+branch deploy will show `noindex` and prove nothing about production. Curl
+the live domain, not a deploy URL.
 
 ---
 
@@ -263,20 +342,35 @@ not a substitute for knowing the answer.
 
 ## Required configuration
 
-### `ALLOW_PROVISIONAL_DEPLOY` must be deleted from Netlify — LAUNCH BLOCKING
+### `ALLOW_PROVISIONAL_DEPLOY` — no longer launch-blocking, still delete it
 
-**Status: BLOCKING for launch. Owner: Ali. Verify in the Netlify UI, not
-from a build log.**
+**Status: HYGIENE, not blocking. Downgraded in Sprint 11. Owner: Ali.**
 
-`ALLOW_PROVISIONAL_DEPLOY=1` disarms every provisional-data guard in the
-project (`lib/provisional.ts`, Sprint 9). It downgrades a build failure to a
-console warning and lets the build through. It exists for one purpose — a
-throwaway preview of unrelated work while placeholder data is still
-outstanding — and it must not be set on any deploy that serves the client's
-real domain.
+`ALLOW_PROVISIONAL_DEPLOY=1` downgrades a provisional-data guard from a build
+failure to a console warning (`lib/provisional.ts`, Sprint 9). It exists for
+one purpose — a throwaway preview of unrelated work while placeholder data is
+still outstanding.
 
-**If it is set at launch, these ten fabricated values are published**, about a
-real registered company, with no build failure to catch it:
+**Sprint 11 narrowed it so it cannot follow the site to launch.** The bypass
+is now honoured only when the host is `netlify` or `local`. On the client's
+real domain — or on any host the build cannot identify — it is ignored
+outright and the guard throws regardless. Verified by building, not by
+reading: with `CONTEXT=production`,
+`NEXT_PUBLIC_SITE_URL=https://example.invalid` (a declared stand-in, see
+invariant 9) and `ALLOW_PROVISIONAL_DEPLOY=1`, the build still exits 1.
+
+That closes the failure this item was written for. The variable is a
+dashboard setting, and dashboard settings outlive the reason they were set;
+left behind, it would previously have gone on suppressing the guards straight
+through the domain switch, publishing the ten values below with a clean-looking
+build log. It can no longer do that.
+
+**Delete it anyway when the diagnostic work is done.** A disarmed escape hatch
+still reads as an armed one to the next person, and the error message it
+suppresses on the staging host is the one that tells you what is outstanding.
+
+**For the record, these are the ten fabricated values** the guards exist to
+keep off the client's domain — about a real registered company:
 
 `data/organization.ts` — reaches the live JSON-LD, which search engines may
 surface as fact in a result card:
@@ -297,12 +391,12 @@ being deleted:
 9. `pass 05 = "Pass five" (name tbc)`
 10. `pass 06 = "Pass six" (name tbc)`
 
-The variable fails closed — only the exact string `1` disarms the guards, so
-a typo leaves them armed. That protects against accidents, not against
-someone setting it deliberately and forgetting. **Deleting the variable is
-the check; a passing build proves nothing**, because a bypassed build passes
-by design. The warning banner it prints is loud, but a deploy log nobody
-reads is not a control.
+The variable fails closed twice over. Only the exact string `1` disarms
+anything, so a typo leaves the guards armed; and since Sprint 11 the host has
+to be `netlify` or `local` as well, so setting it deliberately and forgetting
+no longer reaches the client's domain. What it still does is suppress the
+error on the staging host, where that error is the thing telling you what is
+outstanding — which is the reason to delete it rather than leave it.
 
 The real fix is upstream of this variable: get the five organisation fields
 from Mpho and the five pass names, at which point the guards pass on their
@@ -320,10 +414,21 @@ a guessed or placeholder hostname — this value is the root of `metadataBase`,
 so it becomes every canonical link, every OG image URL and the `sitemap.xml`
 origin at once. Nothing downstream validates it.
 
-As of Sprint 9 it carries a second job: its hostname decides indexability
-(`lib/indexable.ts`). Leaving production pointed at `<name>.netlify.app`
-keeps the whole site `noindex`, deliberately. That is the safe failure
+**As of Sprint 11 this is the single launch switch — see the top of this
+file.** Its hostname now decides three things at once: indexability
+(`lib/indexable.ts`) and both provisional-data guards (`lib/provisional.ts`,
+scope `real-domain`). All three read one shared host test in
+`lib/deploy-host.ts`, so they move together and cannot drift apart.
+
+Leaving production pointed at `<name>.netlify.app` keeps the whole site
+`noindex` and keeps the guards quiet, deliberately. That is the safe failure
 direction, but it is also silent — see the `X-Robots-Tag` item above.
+
+**The host test fails closed.** An unset, empty or unparseable value is
+treated as the real domain, not as safe: the guards enforce. That is
+deliberate — a build that cannot tell where it is going must not assume the
+harmless case. (`lib/site.ts` also throws outright on an unset value, so in
+practice an unset variable fails the build twice over.)
 
 Currently set only in local `.env.local`, to `http://localhost:3000`. The real
 values do not exist yet and must not be guessed; this is a blocker to record,
@@ -411,6 +516,40 @@ unchanged dimensions, with CLS 0 and slightly better fidelity than before.
 The exemption is scoped to those two call sites. Photography stays on the
 optimiser; do not generalise this.
 
+### Every image figure in these docs is superseded, pending a live benchmark
+
+**Status: UNVERIFIED. Blocked on: a connected deployment. Not launch
+blocking.**
+
+`scripts/benchmark-images.mjs` (Sprint 11) measures what Netlify's Image CDN
+actually delivers, per image, against a live deploy. **It has not been run.
+It cannot be — it needs a deployment.**
+
+```bash
+node scripts/benchmark-images.mjs https://<the-deployed-host>
+```
+
+**Every image byte-count currently recorded in this file and in `CLAUDE.md`
+was measured against a different encoder** — Next's own optimiser running
+locally, or `libvips` at the command line — and none of them is evidence
+about what Netlify will serve. That includes the D5 page-weight table (images
+515,452 B, 64.2% of `/`), the `w=1920` hero and Tsikoane candidates
+(96,385 B and 198,201 B), and the Sprint 6J/6K re-encode findings that decided
+`unoptimized` for the two brand marks.
+
+Treat all of them as **superseded** once the script has run against a live
+Netlify deploy, and restate them from its output rather than carrying the
+local numbers forward. The decisions those numbers supported are not
+automatically wrong — the `unoptimized` exemption in particular was about a
+q=75 re-encode inflating an already-optimal source, which is a property of
+any optimiser — but they were argued from figures a different pipeline
+produced, and they should be re-argued from this one.
+
+The script requests each image twice, as a modern browser (AVIF offered) and
+as an older Android one (WebP only). Report both columns; the fallback path is
+a real share of this audience and a figure quoted only from the AVIF column
+overstates what visitors receive.
+
 ### Five Tsikoane summit pass names outstanding from Mpho — NOT a launch blocker
 
 **Status: content gap. Does not block launch.**
@@ -425,12 +564,19 @@ confirmed. See "Outstanding from the client" in `CLAUDE.md`.
    emitted. Verified against build output — the placeholder strings appear only
    in a server-only SSR chunk, never in a client bundle, prerendered HTML or an
    RSC payload.
-2. `data/passes.ts` calls `assertNoProvisional` at scope `any-deploy`, so any
-   build with `CONTEXT` set to anything but `dev` aborts while an unconfirmed
-   pass remains. Verified by building, not by reading: preview exits 1 naming
-   all five. Re-verified under `CONTEXT` in Sprint 9, and under the bypass —
-   with `ALLOW_PROVISIONAL_DEPLOY=1` the build passes and all five are named
-   in the warning banner instead.
+2. `data/passes.ts` calls `assertNoProvisional` at scope `real-domain`
+   (Sprint 11; was `any-deploy`), so a deploy whose canonical host is the
+   client's real domain aborts while an unconfirmed pass remains. Verified by
+   building, not by reading: with `CONTEXT=production` and a real-looking host
+   the guard exits 1 naming all five, and it still exits 1 with
+   `ALLOW_PROVISIONAL_DEPLOY=1` set, because the bypass is ignored there. On
+   the `netlify.app` staging host it correctly does not fire.
+
+**These five placeholders are therefore live on the staging host, by
+design.** Layer 1 keeps them out of the markup, and the host is `noindex`
+either way; layer 2 stops them reaching the real domain. Before Sprint 11 the
+`any-deploy` scope blocked every Netlify build outright, which meant the site
+could not be deployed for review while these names were outstanding.
 
 The section already tells the reader the count is six and that five names are
 to come, so nothing on the page is wrong or misleading in the meantime — it is
@@ -471,6 +617,12 @@ necessarily that the code is wrong.
 | Pass guard | `assertNoProvisional` + render filter | `data/passes.ts` (`any-deploy`) + filter at `Tsikoane.tsx:159` | VERIFIED |
 | Tsikoane elevation | 1,881 m, no provisional flag | `data/stations.ts:35`; no station flagged | VERIFIED |
 | Afriski Winter Day Trip | `status: "upcoming"`, no date field | `status: "upcoming"` (`data/tours.ts:41`); no date field on `Tour` ✓ | VERIFIED (see 6M note) |
+
+**Scope note, Sprint 11.** The two guard rows above record `any-deploy`, which
+was accurate on 8 August 2026. Both guards moved to scope `real-domain` in
+Sprint 11 — see the launch switch at the top of this file. The rows are left as
+measured rather than rewritten, because this section is a dated record of that
+pass, not a description of current state.
 
 **The two DIVERGED rows above were both stale expectations, not defects.**
 Reclassified in Sprint 6M and recorded here as expected behaviour, so that no
